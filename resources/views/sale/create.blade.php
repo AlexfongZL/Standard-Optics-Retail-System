@@ -5,23 +5,30 @@
 <div class="container mt-2">
 <div class="row align-items-start">
     
-<div class="col border border-primary p-3">
-
+<div class="col">
     <h1 class="fs-5 text-body-emphasis align-items-center" style="text-decoration: underline;">
         Customer Details
     </h1>
 
-    <div class="form-check form-switch">
-        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked="true" onclick="toggleCustomerDetails()">
-        <label class="form-check-label h6" for="flexSwitchCheckChecked">Insert Customer Details</label>
-    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked="true" onclick="toggleCustomerDetails()">
+                <label class="form-check-label h6" for="flexSwitchCheckChecked">Insert Customer Details</label>
+            </div>
+        </div>
 
-    <form method="post" action="{{ route('customer.store') }}">
+        <div class="col">
+            <a href="#" class="text-danger" id="clearCustomerInputs">Clear</a>
+        </div>
+    </div>
+    
+    <form method="post" id="customerForm">
     @csrf
     @method('post')
         <div class="input-group">
             <span class="input-group-text" id="basic-addon1">Customer Name</span>
-            <input type="text" id="search-input" class="customer-details form-control" name="name" aria-describedby="basic-addon1" maxlength="255">
+            <input type="text" id="customer_name" class="customer-details form-control" name="name" aria-describedby="basic-addon1" maxlength="255">
             
         </div>
         
@@ -29,38 +36,38 @@
 
         <div class="input-group mt-3 mb-3">
             <span class="input-group-text" id="basic-addon1">IC/Passport No.</span>
-            <input type="text" class="customer-details form-control" name="ic_passport_num" aria-describedby="basic-addon1" maxlength="30">
+            <input type="text" id="ic_passport_num" class="customer-details form-control" name="ic_passport_num" aria-describedby="basic-addon1" maxlength="30">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Tel. No.</span>
-            <input type="text" class="customer-details form-control" name="telephone_num" aria-describedby="basic-addon1" maxlength="30">
+            <input type="text" id="telephone_num" class="customer-details form-control" name="telephone_num" aria-describedby="basic-addon1" maxlength="30">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Home Address</span>
-            <input type="text" class="customer-details form-control" name="address" aria-describedby="basic-addon1" maxlength="255">
+            <input type="text" id="address" class="customer-details form-control" name="address" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Left SPH</span>
-            <button class="btn btn-outline-success" type="button">Update</button>
-            <button class="btn btn-outline-success" type="button" style="fontWeight: bold;">✓</button>
-            <button class="btn btn-outline-danger" type="button" style="fontWeight: bold;">X</button>
-            <input type="text" class="customer-details form-control" name="left_eye_degree" aria-describedby="basic-addon1" maxlength="255">
+            <button id="left_eye_degree_update" class="btn btn-outline-success" type="button">Update</button>
+            <button id="left_eye_degree_confirm" class="btn btn-outline-success hide" type="button" style="fontWeight: bold;">✓</button>
+            <button id="left_eye_degree_cancel" class="btn btn-outline-danger hide" type="button" style="fontWeight: bold;">X</button>
+            <input type="text" id="left_eye_degree" class="customer-details form-control" name="left_eye_degree" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Right SPH</span>
-            <button class="btn btn-outline-success" type="button">Update</button>
-            <button class="btn btn-outline-success" type="button" style="fontWeight: bold;">✓</button>
-            <button class="btn btn-outline-danger" type="button" style="fontWeight: bold;">X</button>
-            <input type="text" class="customer-details form-control" name="right_eye_degree" aria-describedby="basic-addon1" maxlength="255">
+            <button id="right_eye_degree_update" class="btn btn-outline-success" type="button">Update</button>
+            <button id="right_eye_degree_confirm" class="btn btn-outline-success hide" type="button" style="fontWeight: bold;">✓</button>
+            <button id="right_eye_degree_cancel" class="btn btn-outline-danger hide" type="button" style="fontWeight: bold;">X</button>
+            <input type="text" id="right_eye_degree" class="customer-details form-control" name="right_eye_degree" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text">Remarks</span>
-            <textarea class="customer-details form-control" name="remarks" maxlength="255"></textarea>
+            <textarea id="remarks" class="customer-details form-control" name="remarks" maxlength="255"></textarea>
         </div>
     </form>
 </div>
@@ -70,54 +77,78 @@
         Sales Details
     </h1>
 
-    <form method="post" action="{{ route('customer.store') }}">
-    @csrf
-    @method('post')
+<form>
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Description</span>
-            <textarea class="form-control" name="description" maxlength="255"></textarea>
+            <textarea class="form-control" id="sale_description" maxlength="255"></textarea>
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Price</span>
             <span class="input-group-text">RM</span>
-            <!-- <input type="text" class="form-control" name="price" aria-describedby="basic-addon1" maxlength="30"> -->
-            <input class="form-control" type="number" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)">
+            <!-- <input type="text" class="form-control" name="sale_price" aria-describedby="basic-addon1" maxlength="30"> -->
+            <!-- <input class="form-control" id="sale_price" type="number" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)"> -->
+            <input class="form-control" id="sale_price" type="number" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Payment Status</span>
             <!-- <input type="text" class="form-control" name="payment_status" aria-describedby="basic-addon1" maxlength="30"> -->
-            <select class="form-select" aria-label="Default select example">
+            <select class="form-select" id="paymentStatus" aria-label="Default select example" onchange="toggleInputs()">
                 <option value="1" selected>Fully Paid</option>
-                <option value="2">Not Yet Fully Paid</option>
+                <option value="2">Pay by Deposit</option>
             </select>
         </div>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Deposit</span>
-            <span class="input-group-text">RM</span>
-            <!-- <input type="text" class="form-control" name="deposit" aria-describedby="basic-addon1" maxlength="255"> -->
-            <input class="form-control" type="number" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)">
+            <span class="deposit input-group-text" id="basic-addon1">Deposit</span>
+            <span class="deposit input-group-text">RM</span>
+            <input class="deposit form-control" id="sale_deposit" type="number" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">
         </div>
 
-        <!-- <div class="input-group mb-3" style="display: none;"> -->
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Remaining</span>
-            <span class="input-group-text">RM</span>
-            <input class="form-control" type="number" disabled>
+        <div class="input-group mb-1">
+            <span class="remaining input-group-text" id="basic-addon1">Remaining</span>
+            <span class="remaining input-group-text">RM</span>
+            <input class="remaining form-control" id="sale_remaining" type="number" disabled>
         </div>
-    </form>
+</form>
     </div>
 
 </div>
-
     <div class="row align-items-start mt-3">
-            <button id="saveButton" class="btn btn-success" type="submit">Save</button>
+            <button id="submitButton" class="btn btn-success" type="submit">Submit</button>
     </div>
 </div>
 
 <script>
+// #############################################################################################################################
+//  _____       _     _ _        ______                _   _                 
+// |  __ \     | |   | (_)      |  ____|              | | (_)                
+// | |__) |   _| |__ | |_  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
+// |  ___/ | | | '_ \| | |/ __| |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+// | |   | |_| | |_) | | | (__  | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+// |_|    \__,_|_.__/|_|_|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+
+    var customerId = null;
+    var original_left_eye_degree = '';
+    var original_right_eye_degree = '';
+
+    // Define the mapping between suggestion properties and input IDs
+    const propertyToInputMap = {
+            'name': 'customer_name',
+            'ic_passport_num': 'ic_passport_num',
+            'telephone_num': 'telephone_num',
+            'address': 'address',
+            // 'latest_degree': {
+            //     'left_eye_degree': 'left_eye_degree',
+            //     'right_eye_degree': 'right_eye_degree',
+            // },
+            // 'left_eye_degree': 'left_eye_degree',
+            // 'right_eye_degree': 'right_eye_degree',
+            'remarks': 'remarks'
+        };
+
+    // function to check if the switch is toggle
     function toggleCustomerDetails() {
         // Get the checkbox element
         var checkbox = document.getElementById('flexSwitchCheckChecked');
@@ -130,57 +161,199 @@
             for (var i = 0; i < customerDetailsElements.length; i++) {
                 customerDetailsElements[i].disabled = false;
             }
+            $('#customerForm').show();
         } else {
             // If not checked, disable all elements with the "customer-details" class
             for (var i = 0; i < customerDetailsElements.length; i++) {
                 customerDetailsElements[i].disabled = true;
                 customerDetailsElements[i].value = '';
             }
+            $('#customerForm').hide();
         }
     }
 
-    $(document).ready(function()
-    {
-        // Function to auto fetch suggestions --> WHEN USER ENTER TEXT INTO SEARCH BOX <--
-        function fetchSuggestions(query) {
-            $.ajax({
-                url: '{{ route("suggest") }}',
-                method: 'GET',
-                data: { query: query },
-                success: function(data) {
-                    displaySuggestions(data);
-                }
-            });
-        }
+    // function to disable all customer details input
+    function disableCustomerDetailsInput() {
+        // document.getElementById('flexSwitchCheckChecked').disabled = true;
 
-        // Function to display suggestions
-        function displaySuggestions(suggestions) {
-            var resultsDiv = $('#search-results');
-            resultsDiv.empty();
-            $.each(suggestions, function(index, suggestion) {
-                var resultDiv = $('<div>').addClass('result-item p-2').text(suggestion.name);
-            
-                // Change background color when mouse hovers over the div
-                resultDiv.hover(function() {
-                    $(this).addClass('hovered');
-                }, function() {
-                    $(this).removeClass('hovered');
-                });
+        var customerDetailsElements = document.getElementsByClassName('customer-details');
+
+        for (var i = 0; i < customerDetailsElements.length; i++) {
+            customerDetailsElements[i].disabled = true;
+        }
+    }
+
+    // Function to auto fetch suggestions --> WHEN USER ENTER TEXT INTO SEARCH BOX <--
+    function fetchSuggestions(query) {
+        $.ajax({
+            url: '{{ route("suggest") }}',
+            method: 'GET',
+            data: { query: query },
+            success: function(data) {
+                displaySuggestions(data);
+            }
+        });
+    }
+
+    // Function to display suggestions and create link to all suggestion
+    function displaySuggestions(suggestions) {
+        var resultsDiv = $('#search-results');
+        resultsDiv.empty();
+        $.each(suggestions, function(index, suggestion) {
+            var resultDiv = $('<div>').addClass('result-item p-2').text(suggestion.name);
+        
+            // Change background color when mouse hovers over the div
+            resultDiv.hover(function() {
+                $(this).addClass('hovered');
+            }, function() {
+                $(this).removeClass('hovered');
+            });
 
             resultDiv.click(function() {
-                window.location.href = '{{ route("customer.detail", ["id" => ":id"]) }}'.replace(':id', suggestion.id);
+                // window.location.href = '{{ route("customer.detail", ["id" => ":id"]) }}'.replace(':id', suggestion.id);
+                populateCustomerDetails(suggestion);
             });
 
-                resultsDiv.append(resultDiv);
-            });
-            resultsDiv.show();
+            resultsDiv.append(resultDiv);
+        });
+        resultsDiv.show();
+    }
+
+    // function to populate the customer details input after user click the suggestions
+    function populateCustomerDetails(suggestion){
+        $('#search-results').hide();
+
+        Object.keys(propertyToInputMap).forEach(property => {
+            const inputValue = suggestion[property];
+            const inputId = propertyToInputMap[property];
+
+            // Set the value of the input box if the value is not null
+            if (inputValue !== null && inputValue !== undefined) {
+                document.getElementById(inputId).value = inputValue;
+            }            
+        });
+        
+        document.getElementById('left_eye_degree').value = suggestion.latest_degree?.left_eye_degree ?? '';
+        original_left_eye_degree = suggestion.latest_degree?.left_eye_degree ?? '';
+
+        document.getElementById('right_eye_degree').value = suggestion.latest_degree?.right_eye_degree ?? '';
+        original_right_eye_degree = suggestion.latest_degree?.right_eye_degree ?? '';
+
+        customerId = suggestion.id;
+        disableCustomerDetailsInput();
+    }
+
+    function preventDelete(event) {
+        if(event.key === 'Backspace' || event.key === 'Delete') {
+            event.preventDefault(); // Prevent default behavior (deleting the digit)
+            event.target.value = '1.00'; // Set input value to 0
+        }
+    }
+
+    function toggleInputs() {
+        var paymentStatus = document.getElementById('paymentStatus');
+        var deposit = document.getElementsByClassName('deposit');
+        var remaining = document.getElementsByClassName('remaining');
+
+        if (paymentStatus.value === '2') {
+            for (var i = 0; i < deposit.length; i++) {
+                deposit[i].style.display = 'block';
+            }
+
+            for (var i = 0; i < remaining.length; i++) {
+                remaining[i].style.display = 'block';
+            }
+        } else {
+            for (var i = 0; i < deposit.length; i++) {
+                deposit[i].style.display = 'none';
+            }
+
+            for (var i = 0; i < remaining.length; i++) {
+                remaining[i].style.display = 'none';
+            }
+
+            deposit.value = 0.00;
+            // console.log('deposit: ',deposit.value);
+        }
+    }
+
+    function calculateRemaining(){
+        var sale_deposit = parseFloat(document.getElementById("sale_deposit").value) || 0;
+        var sale_price = parseFloat(document.getElementById("sale_price").value) || 0;
+        
+        var remainingAmount = sale_price - sale_deposit;
+        
+        document.getElementById("sale_remaining").value = remainingAmount.toFixed(2);
+    }
+
+    // to submit data
+    function submitSale(){
+        var data = {
+            id: to_be_editted_degree.id,
+            customers_id: to_be_editted_degree.customers_id,
+            left_eye_degree: document.getElementById('updatedLeftEyeValue').value,
+            right_eye_degree: document.getElementById('updatedRightEyeValue').value,
         }
 
-        // Autocomplete functionality
-        $('#search-input').on('input', function() {
-            var query = $(this).val();
+        // console.log('To be updated degree data',data );
+        
+    }
 
-            console.log('in auto complete');
+    // END
+// #############################################################################################################################
+  
+// ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░▒▒▒▒░░░▒▒▒▒░░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒░▒▒▒▒▒▒░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒░░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒░░░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒░░░░░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░▒░░░░░░░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒░▒▒▒░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒░░░░░▓▓
+// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒░░░░░░▓▓
+// ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+// _______▒__________▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+// ______▒_______________▒▒▒▒▒▒▒▒
+// _____▒________________▒▒▒▒▒▒▒▒
+// ____▒___________▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+// ___▒
+// __▒______▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+// _▒______▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
+// ▒▒▒▒___▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
+// ▒▒▒▒__▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
+// ▒▒▒__▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+// ▒▒
+
+// initial load
+    Object.keys(propertyToInputMap).forEach(property => {
+        const inputId = propertyToInputMap[property];
+        document.getElementById(inputId).value = '';
+    });
+
+    toggleInputs();
+    calculateRemaining();
+
+// END-------initial load-------END
+
+
+// START-----LIVE CAPTURE-----START
+    $(document).ready(function()
+    {
+        // auto calculate the sale_remaining sale_price
+        document.getElementById("sale_price").addEventListener("input", calculateRemaining);
+        document.getElementById("sale_deposit").addEventListener("input", calculateRemaining);
+
+
+        // Autocomplete functionality
+        $('#customer_name').on('input', function() {
+            var query = $(this).val();
 
             if (query.length >= 1) {
                 fetchSuggestions(query);
@@ -189,29 +362,143 @@
             }
         });    
 
+        // hide the suggestion box once user click other element in the page
         $(document).click(function(event) {
-            if (!$(event.target).closest('#search-input, #search-results').length) {
+            if (!$(event.target).closest('#customer_name, #search-results').length) {
                 $('#search-results').hide();
             }
         });
 
-        // Clear text button functionality
-        $('#clear-search-input').click(function() {
-            $('#search-input').val('').focus();
-            $('#clear-search-button').hide();
-            $('#search-results').hide();
+        // clearing the customer informations in the form
+        $('#clearCustomerInputs').click(function(){
+            var customerDetailsElements = document.getElementsByClassName('customer-details');
+
+            Object.keys(propertyToInputMap).forEach(property => {
+                const inputId = propertyToInputMap[property];
+                document.getElementById(inputId).value = '';
+            });
+
+            // document.getElementById('flexSwitchCheckChecked').disabled = false;
+
+            for (var i = 0; i < customerDetailsElements.length; i++) {
+                customerDetailsElements[i].disabled = false;
+            }
+            // $('#clearCustomerInputs').show();
+            customerId = null;
         });
 
-        // Show or hide clear text button based on input value
-        $('#search-input').on('input', function() {
-            if ($(this).val().length > 0) {
-                $('#clear-search-button').show();
-            } else {
-                $('#clear-search-button').hide();
-            }
+        // submit the information
+        $('#submitButton').click(function(event) {
+            // Prevent the default form submission
+            event.preventDefault();
+
+            // var customerName = $('#customer_name').val();
+            // var paymentStatus = document.getElementById('paymentStatus');
+            var checkbox = document.getElementById('flexSwitchCheckChecked');
+ 
+            console.log("checkbox: ", checkbox.checked);
+            // console.log('customerId: ', customerId);
+
+            var new_sale_data = {
+                // customer data
+                customerId: checkbox.checked ? customerId : null,
+                name: checkbox.checked ? customer_name.value : null,
+                ic_passport_num: checkbox.checked ? ic_passport_num.value : null,
+                telephone_num: checkbox.checked ? telephone_num.value : null,
+                address: checkbox.checked ? address.value : null,
+                left_eye_degree: checkbox.checked ? left_eye_degree.value : null,
+                right_eye_degree: checkbox.checked ? right_eye_degree.value : null,
+                remarks: checkbox.checked ? remarks.value : null,
+
+                // sale data
+                description: sale_description.value,
+                price: sale_price.value,
+                is_paid: paymentStatus.value === "1" ? true : false,
+                deposit: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_deposit.value : null),
+                sale_remaining: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_remaining.value : null),
+            };
+            console.log('new_sale_data: ', new_sale_data);
+
+
+            fetch('{{ route('sale.store') }}', {
+                method: 'POST',
+                body: JSON.stringify(new_sale_data), // Convert data to JSON
+                headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ',response.status);
+                }
+                return response.json();
+            })
+            .then(data =>{
+                window.location.href = '/sale/list';
+                // console.log(data);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error.message);
+            });
+
+        });
+
+        // customer update degree button
+        $('#left_eye_degree_update').click(function(event){
+            this.style.display = 'none';
+            document.getElementById('left_eye_degree_confirm').style.display = 'inline-block';
+            document.getElementById('left_eye_degree_cancel').style.display = 'inline-block';
+
+            document.getElementById('left_eye_degree').disabled = false;
+        });
+
+        $('#right_eye_degree_update').click(function(event){
+            this.style.display = 'none';
+            document.getElementById('right_eye_degree_confirm').style.display = 'inline-block';
+            document.getElementById('right_eye_degree_cancel').style.display = 'inline-block';
+
+            document.getElementById('right_eye_degree').disabled = false;
+        });
+
+        // customer confirm degree button
+        $('#left_eye_degree_confirm').click(function(event){
+            this.style.display = 'none';
+            document.getElementById('left_eye_degree_cancel').style.display = 'none';
+
+            document.getElementById('left_eye_degree_update').style.display = 'inline-block';
+
+            document.getElementById('left_eye_degree').disabled = true;
+        });
+
+        $('#right_eye_degree_confirm').click(function(event){
+            this.style.display = 'none';
+            document.getElementById('right_eye_degree_cancel').style.display = 'none';
+
+            document.getElementById('right_eye_degree_update').style.display = 'inline-block';
+
+            document.getElementById('right_eye_degree').disabled = true;
+        });
+
+        // customer cancel degree button
+        $('#left_eye_degree_cancel').click(function(event){
+            this.style.display = 'none';
+            document.getElementById('left_eye_degree_confirm').style.display = 'none';
+
+            document.getElementById('left_eye_degree_update').style.display = 'inline-block';
+
+            document.getElementById('left_eye_degree').disabled = true;
+            document.getElementById('left_eye_degree').value = original_left_eye_degree;
+        });
+
+        $('#right_eye_degree_cancel').click(function(event){
+            this.style.display = 'none';
+            document.getElementById('right_eye_degree_confirm').style.display = 'none';
+
+            document.getElementById('right_eye_degree_update').style.display = 'inline-block';
+
+            document.getElementById('right_eye_degree').disabled = true;
+            document.getElementById('right_eye_degree').value = original_right_eye_degree;
         });
     });
 
-
+// END-----LIVE CAPTURE-----END
 </script>
 @endsection

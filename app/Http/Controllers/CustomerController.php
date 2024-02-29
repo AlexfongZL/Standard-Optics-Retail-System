@@ -101,13 +101,40 @@ class CustomerController extends Controller
     // auto suggest in the customer list's search box
     public function suggest(Request $request){
         $query = $request->input('query');
+        $results = [];
 
         // Fetch suggested customer names based on the query
         $suggestions = Customers::where('name', 'like', '%' . $query . '%')
-                                ->select('id', 'name') // Select id and name fields
+                                // ->select('id', 'name') // Select id and name fields
                                 ->get();
 
-        return response()->json($suggestions);
+        foreach ($suggestions as $suggestion) {
+            // Get the latest degree for the current suggestion
+            $latestDegree = Degrees::where('customers_id', $suggestion->id)
+                                    ->orderBy('created_at', 'desc')
+                                    ->first();
+
+            // Prepare the result
+            $result = [
+                'id' => $suggestion->id,
+                'name' => $suggestion->name,
+                'ic_passport_num' => $suggestion->ic_passport_num,
+                'telephone_num' => $suggestion->telephone_num,
+                'address' => $suggestion->address,
+                'remarks' => $suggestion->remarks,
+                'latest_degree' => $latestDegree ? [
+                    'left_eye_degree' => $latestDegree->left_eye_degree,
+                    'right_eye_degree' => $latestDegree->right_eye_degree,
+                    // Add other fields if needed
+                ] : null,
+            ];
+        
+            // Add the result to the results array
+            $results[] = $result;
+        }
+
+        // return response()->json($suggestions);
+        return response()->json($results);
     }
 
     // to search all the related name input from the search box and list it all with pages

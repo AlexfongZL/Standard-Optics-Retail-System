@@ -84,7 +84,20 @@ return [
         'description' => 'Description',
         'price' => 'Price (RM)',
         'is_paid' => 'Payment Status',
+        'deposit' => 'Deposit (RM)',
+        'paid_installment' => 'Paid Installment (RM)',
+        'remaining' => 'Remaining (RM)',
         'created_at' => '📆',
+        'details' => [
+            'payment_history' => 'Payment History',
+            'price' => 'Full Price',
+            'deposit' => 'Deposit',
+            'remaining' => 'Remaninig',
+            'date' => 'Date',
+            'pay_description' => 'Payment Description',
+            'amount' => 'Amount (RM)',
+            'installment' => 'Installment Payment',
+        ],
     ],
 
 ];

@@ -5,16 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Sales extends Model
+class Installments extends Model
 {
     use HasFactory;
 
     protected $fillable =[
-        'customers_id',
-        'description',
-        'price',
-        'is_paid',
-        'deposit',
-        'fully_paid_date',
+        'sales_id',
+        'payment_amount',
     ];
 }

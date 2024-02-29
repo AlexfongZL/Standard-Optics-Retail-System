@@ -58,7 +58,7 @@
             </li>
             
             <li class="nav-item">
-                <a class="nav-link {{ request()->is('customer/create') ? 'active' : '' }}" href="{{route('customer.create')}}">{{__('txt.link.installment.show_all')}}</a>
+                <a class="nav-link {{ request()->is('installment/list') ? 'active' : '' }}" href="{{route('installment.list')}}">{{__('txt.link.installment.show_all')}}</a>
             </li>
         </ul>
         @yield('content')

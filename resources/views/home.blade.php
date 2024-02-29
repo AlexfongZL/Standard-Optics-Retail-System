@@ -18,7 +18,7 @@
 
       <div class="feature col">        
         <h3 class="fs-2 text-body-emphasis">📅 {{__('txt.home.installment.title')}}</h3>
-        <p><button id="@@@" class="btn btn-warning" type="submit">{{__('txt.home.installment.show_all')}}</button></p>
+        <p><button id="showAllInstallmentButton" class="btn btn-warning" type="submit">{{__('txt.home.installment.show_all')}}</button></p>
       </div>
     </div>
   </div>
@@ -45,6 +45,9 @@
     document.getElementById('addNewSaleButton').addEventListener('click', function() {
         redirectTo('/sale/create');
     });
-</script>
 
+    document.getElementById('showAllInstallmentButton').addEventListener('click', function() {
+        redirectTo('/installment/list');
+    });
+</script>
 @endsection
