@@ -1,5 +1,5 @@
 @extends ('layoutNavigate')
-
+@section('title',__('txt.link.customer.show_all'))
 @section('content')
 
 @if($errors->any())
@@ -41,17 +41,17 @@
     </div>
 </div>
 
-<table class="table table-bordered border border-secondary">
+<table class="table table-bordered border border-secondary mt-2">
     <thead class="thead-dark">
         <tr>
         <th scope="col">{{__('txt.customer.name')}}</th>
-        <th scope="col" class="h2">{{__('txt.customer.ic_passport')}}</th>
-        <th scope="col" class="h2">{{__('txt.customer.telephone')}}</th>
-        <th scope="col" class="h2">{{__('txt.customer.address')}}</th>
+        <th scope="col">{{__('txt.customer.ic_passport')}}</th>
+        <th scope="col">{{__('txt.customer.telephone')}}</th>
+        <th scope="col">{{__('txt.customer.address')}}</th>
         <th scope="col">{{__('txt.customer.left_eye_degree')}}</th>
         <th scope="col">{{__('txt.customer.right_eye_degree')}}</th>
-        <th scope="col" class="h2">{{__('txt.customer.remarks')}}</th>
-        <th scope="col" class="h2">{{__('txt.customer.created_at')}}</th>
+        <th scope="col">{{__('txt.customer.remarks')}}</th>
+        <th scope="col">{{__('txt.customer.created_at')}}</th>
         </tr>
     </thead>
 
@@ -101,8 +101,8 @@
                 });
 
             resultDiv.click(function() {
-                window.location.href = '{{ route("customer.detail", ["id" => ":id"]) }}'.replace(':id', suggestion.id);
-            });
+                    window.location.href = '{{ route("customer.detail", ["id" => ":id"]) }}'.replace(':id', suggestion.id);
+                });
 
                 resultsDiv.append(resultDiv);
             });
@@ -112,8 +112,7 @@
         // Autocomplete functionality
         $('#search-input').on('input', function() {
             var query = $(this).val();
-
-            console.log('in auto complete');
+            // console.log('in auto complete');
 
             if (query.length >= 1) {
                 fetchSuggestions(query);

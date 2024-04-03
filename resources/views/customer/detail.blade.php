@@ -1,8 +1,8 @@
 @extends ('layoutNavigate')
-@section('title',__('txt.link.customer.add_new'))
+@section('title',__('txt.link.customer.details'))
 @section('content')
 
-@if(session('success'))
+<!-- @if(session('success'))
     <div class="alert alert-success" role="alert">
         {{ session('success') }}
     </div>
@@ -12,7 +12,7 @@
     <div class="alert alert-danger" role="alert" id="errorAlert">
         {{ session('error') }}
     </div>
-@endif
+@endif -->
 <div id="customerData" data-customer-id="{{ $customer->id }}"></div>
 
 <form method="POST" action="{{ route('customer.update', ['id' => $customer->id]) }}">
@@ -20,22 +20,22 @@
     @method('post')
     <div class="input-group mb-1">
         <span class="input-group-text" id="basic-addon1">{{__('txt.customer.name')}}:</span>
-        <input type="text" class="form-control" name="name" aria-describedby="basic-addon1" value="{{ $customer->name }}" maxlength="255">
+        <input type="text" class="form-control capitalize" name="name" aria-describedby="basic-addon1" value="{{ $customer->name }}" maxlength="255">
 
         <span class="input-group-text" id="basic-addon1">{{__('txt.customer.address')}}:</span>
-        <input type="text" class="form-control" name="address" aria-describedby="basic-addon1" value="{{ $customer->address }}" maxlength="255">
+        <input type="text" class="form-control capitalize" name="address" aria-describedby="basic-addon1" value="{{ $customer->address }}" maxlength="255">
 
         <span class="input-group-text">{{__('txt.customer.remarks')}}:</span>
-        <textarea class="form-control" id="remarks" name="remarks" maxlength="255">{{ $customer->remarks }}</textarea>
+        <textarea class="form-control capitalize" id="remarks" name="remarks" maxlength="255">{{ $customer->remarks }}</textarea>
 
     </div>
 
     <div class="input-group mb-1">
         <span class="input-group-text" id="basic-addon1">{{__('txt.customer.ic_passport')}}:</span>
-        <input type="text" class="form-control" name="ic_passport_num" aria-describedby="basic-addon1" value="{{ $customer->ic_passport_num }}" maxlength="30">
+        <input type="text" class="form-control capitalize" name="ic_passport_num" aria-describedby="basic-addon1" value="{{ $customer->ic_passport_num }}" maxlength="30">
 
         <span class="input-group-text" id="basic-addon1">{{__('txt.customer.telephone')}}:</span>
-        <input type="text" class="form-control" name="telephone_num" aria-describedby="basic-addon1" value="{{ $customer->telephone_num }}" maxlength="30">
+        <input type="text" class="form-control capitalize" name="telephone_num" aria-describedby="basic-addon1" value="{{ $customer->telephone_num }}" maxlength="30">
     </div>
 
     <div class="d-grid ">
@@ -77,7 +77,7 @@
                                 </button>
                             </td>
                             <td>
-                                <button class="deleteButton btn btn-danger" data-id="{{ $degree->id }}" style="fontWeight: bold;">
+                                <button class="deleteButton btn btn-danger" data-id="{{ $degree->id }}" data-action="deleteDegree" style="fontWeight: bold;">
                                     X
                                 </button>
                                 <button class="cancelButton btn btn-danger" style="display: none;">
@@ -99,7 +99,8 @@
                         <th scope="col">{{__('txt.customer.details.create_date')}}</th>
                         <th scope="col">{{__('txt.customer.details.sales_description')}}</th>
                         <th scope="col">{{__('txt.customer.details.sales_price')}}</th>
-                        <th scope="col">{{__('txt.customer.details.sales_payment')}}</th>                    
+                        <th scope="col">{{__('txt.customer.details.sales_payment')}}</th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
 
@@ -115,6 +116,11 @@
                                 @else
                                     Not Paid
                                 @endif
+                            </td>
+                            <td>
+                                <button class="deleteButton btn btn-danger" data-id="{{ $sale->id }}" data-action="deleteSale" style="fontWeight: bold;">
+                                    X
+                                </button>
                             </td>
                         </tr>
                     @endforeach
@@ -132,6 +138,9 @@
 // |  ___/ | | | '_ \| | |/ __| |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
 // | |   | |_| | |_) | | | (__  | |  | |_| | | | | (__| |_| | (_) | | | \__ \
 // |_|    \__,_|_.__/|_|_|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+    
+    
+    
 
     // function to format date into dd-mm-yyyy (eg. 15-02-2024)
     function formatDate(dateString) {
@@ -187,7 +196,7 @@
                             </button>
                         </td>
                         <td>
-                            <button class="deleteButton btn btn-danger" data-id="${item[i].id}" style="fontWeight: bold;">
+                            <button class="deleteButton btn btn-danger" data-id="${item[i].id}" data-action="deleteDegree" style="fontWeight: bold;">
                                 X
                             </button>
                             <button class="cancelButton btn btn-danger" style="display: none;">
@@ -214,36 +223,63 @@
     function addDeleteEventListenerToButton(){
         document.querySelectorAll('.deleteButton').forEach(button => {
             button.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
                 const id = this.getAttribute('data-id');
 
-                var to_be_deleted_degree = {
+                var to_be_deleted_data = {
                     customers_id: {{ $customer->id }},
                     id: id,
                 };
+                console.log('To be deleted data: ',to_be_deleted_data);
 
-                // console.log('To be deleted degree: ',to_be_delete_degree);
-
-                fetch('{{ route('customer.delete_degree') }}', {
-                    method: 'POST',
-                    body: JSON.stringify(to_be_deleted_degree),
-                    headers: { 
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                        'Content-Type': 'application/json' }
-                })
-                .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                if(action === 'deleteDegree'){
+                    fetch('{{ route('customer.delete_degree') }}', {
+                        method: 'POST',
+                        body: JSON.stringify(to_be_deleted_data),
+                        headers: { 
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                            'Content-Type': 'application/json' }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                            return response.json();
+                    })
+                    .then(data => {
+                        console.log(data);
+                        // fetchAllDegrees(data.id);
+                        fetchAllDegrees();
+                    })
+                    .catch(error => {
+                        console.error('Error performing deletion:', error);
+                    });
                 }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log(data);
-                    // fetchAllDegrees(data.id);
-                    fetchAllDegrees();
-                })
-                .catch(error => {
-                    console.error('Error performing deletion:', error);
-                });
+                else if (action === 'deleteSale') {
+                    fetch('{{ route('sale.delete_sale') }}', {
+                        method: 'POST',
+                        body: JSON.stringify(to_be_deleted_data),
+                        headers: { 
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                            'Content-Type': 'application/json' }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                            return response.json();
+                    })
+                    .then(data => {
+                        console.log(data);
+                        // fetchAllDegrees(data.id);
+                        // fetchAllDegrees();
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error performing deletion:', error);
+                    });
+                }
+                
             });
         });
     }
@@ -271,8 +307,8 @@
                 var rightEyeValue = rightEyeCell.textContent.trim();
                 
                 // Replace the cells with input fields
-                leftEyeCell.innerHTML = '<input id="updatedLeftEyeValue" type="text" class="form-control" value="' + leftEyeValue + '" maxlength="255">';
-                rightEyeCell.innerHTML = '<input id="updatedRightEyeValue" type="text" class="form-control" value="' + rightEyeValue + '" maxlength="255">';
+                leftEyeCell.innerHTML = '<input id="updatedLeftEyeValue" type="text" class="form-control capitalize" value="' + leftEyeValue + '" maxlength="255">';
+                rightEyeCell.innerHTML = '<input id="updatedRightEyeValue" type="text" class="form-control capitalize" value="' + rightEyeValue + '" maxlength="255">';
 
                 button.style.display = 'none';
                 row.querySelector('.deleteButton').style.display = 'none';
@@ -283,6 +319,8 @@
                 // Disable all other edit & delete buttons
                 toggleButtons('editButton', false);
                 toggleButtons('deleteButton', false);
+
+                capitalize();
 
                 // when save edit button clicked
                 row.querySelector('.saveButton').addEventListener('click', function(){
@@ -325,6 +363,16 @@
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error.message);
         });
+    }
+
+    function capitalize(){
+        document.querySelectorAll('.capitalize').forEach(input => {
+        // Add an event listener for the 'input' event
+        input.addEventListener('input', function() {
+            // Capitalize the input value
+            this.value = this.value.toUpperCase();
+        });
+    });
     }
 
     // END
@@ -376,6 +424,7 @@
 // ## LOAD THESE CODE BELOW WHEN REFRESH OR GO INTO THIS PAGE ##
 
 // Get all input elements and the textarea element
+    capitalize();
     const inputs = document.querySelectorAll('input[type="text"]');
     const textarea = document.getElementById('remarks');
     const saveButton = document.getElementById('saveButton');

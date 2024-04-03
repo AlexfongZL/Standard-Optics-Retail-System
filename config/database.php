@@ -62,6 +62,13 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
             'timezone' => '+08:00',
+            
+            // the current XAMPP in MacOS doesn't have mysql-client (which include mysqldump function),
+            // hence, make a path to use the homebrew's mysql-client.
+            'dump' => [
+                'dump_binary_path' => '/opt/homebrew/Cellar/mysql-client/8.3.0/bin',
+            ],
+            
         ],
 
         'pgsql' => [

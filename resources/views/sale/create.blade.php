@@ -1,5 +1,5 @@
 @extends ('layoutNavigate')
-@section('title',__('txt.link.customer.add_new'))
+@section('title',__('txt.link.sale.add_new'))
 @section('content')
 <!-- <div class="container mt-1"> -->
 <div class="container mt-2">
@@ -28,25 +28,26 @@
     @method('post')
         <div class="input-group">
             <span class="input-group-text" id="basic-addon1">Customer Name</span>
-            <input type="text" id="customer_name" class="customer-details form-control" name="name" aria-describedby="basic-addon1" maxlength="255">
-            
+            <input type="text" id="customer_name" class="customer-details form-control capitalize" name="name" aria-describedby="basic-addon1" maxlength="255">            
         </div>
+
+        <div class="input-group" id="warning-message" style="color: red;"></div>
         
         <div id="search-results" class="position-absolute w-50 border border-secondary bg-white" style="z-index: 1000; display: none; left: 18.55%;";></div>
 
         <div class="input-group mt-3 mb-3">
             <span class="input-group-text" id="basic-addon1">IC/Passport No.</span>
-            <input type="text" id="ic_passport_num" class="customer-details form-control" name="ic_passport_num" aria-describedby="basic-addon1" maxlength="30">
+            <input type="text" id="ic_passport_num" class="customer-details form-control capitalize" name="ic_passport_num" aria-describedby="basic-addon1" maxlength="30">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Tel. No.</span>
-            <input type="text" id="telephone_num" class="customer-details form-control" name="telephone_num" aria-describedby="basic-addon1" maxlength="30">
+            <input type="text" id="telephone_num" class="customer-details form-control capitalize" name="telephone_num" aria-describedby="basic-addon1" maxlength="30">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Home Address</span>
-            <input type="text" id="address" class="customer-details form-control" name="address" aria-describedby="basic-addon1" maxlength="255">
+            <input type="text" id="address" class="customer-details form-control capitalize" name="address" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
@@ -54,7 +55,7 @@
             <button id="left_eye_degree_update" class="btn btn-outline-success" type="button">Update</button>
             <button id="left_eye_degree_confirm" class="btn btn-outline-success hide" type="button" style="fontWeight: bold;">✓</button>
             <button id="left_eye_degree_cancel" class="btn btn-outline-danger hide" type="button" style="fontWeight: bold;">X</button>
-            <input type="text" id="left_eye_degree" class="customer-details form-control" name="left_eye_degree" aria-describedby="basic-addon1" maxlength="255">
+            <input type="text" id="left_eye_degree" class="customer-details form-control capitalize" name="left_eye_degree" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
@@ -62,12 +63,12 @@
             <button id="right_eye_degree_update" class="btn btn-outline-success" type="button">Update</button>
             <button id="right_eye_degree_confirm" class="btn btn-outline-success hide" type="button" style="fontWeight: bold;">✓</button>
             <button id="right_eye_degree_cancel" class="btn btn-outline-danger hide" type="button" style="fontWeight: bold;">X</button>
-            <input type="text" id="right_eye_degree" class="customer-details form-control" name="right_eye_degree" aria-describedby="basic-addon1" maxlength="255">
+            <input type="text" id="right_eye_degree" class="customer-details form-control capitalize" name="right_eye_degree" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text">Remarks</span>
-            <textarea id="remarks" class="customer-details form-control" name="remarks" maxlength="255"></textarea>
+            <textarea id="remarks" class="customer-details form-control capitalize" name="remarks" maxlength="255"></textarea>
         </div>
     </form>
 </div>
@@ -80,7 +81,7 @@
 <form>
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Description</span>
-            <textarea class="form-control" id="sale_description" maxlength="255"></textarea>
+            <textarea class="form-control capitalize" id="sale_description" maxlength="255"></textarea>
         </div>
 
         <div class="input-group mb-3">
@@ -132,6 +133,15 @@
     var customerId = null;
     var original_left_eye_degree = '';
     var original_right_eye_degree = '';
+    const textareas = document.querySelectorAll('.capitalize');
+
+    // Add event listener for input event to each textarea
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            // Capitalize the text in the textarea
+            this.value = this.value.toUpperCase();
+        });
+    });
 
     // Define the mapping between suggestion properties and input IDs
     const propertyToInputMap = {
@@ -392,53 +402,107 @@
             // Prevent the default form submission
             event.preventDefault();
 
-            // var customerName = $('#customer_name').val();
-            // var paymentStatus = document.getElementById('paymentStatus');
             var checkbox = document.getElementById('flexSwitchCheckChecked');
- 
-            console.log("checkbox: ", checkbox.checked);
-            // console.log('customerId: ', customerId);
 
-            var new_sale_data = {
-                // customer data
-                customerId: checkbox.checked ? customerId : null,
-                name: checkbox.checked ? customer_name.value : null,
-                ic_passport_num: checkbox.checked ? ic_passport_num.value : null,
-                telephone_num: checkbox.checked ? telephone_num.value : null,
-                address: checkbox.checked ? address.value : null,
-                left_eye_degree: checkbox.checked ? left_eye_degree.value : null,
-                right_eye_degree: checkbox.checked ? right_eye_degree.value : null,
-                remarks: checkbox.checked ? remarks.value : null,
+            if (checkbox.checked){
+                if (!document.getElementById('customer_name').value){
+                    event.preventDefault();
 
-                // sale data
-                description: sale_description.value,
-                price: sale_price.value,
-                is_paid: paymentStatus.value === "1" ? true : false,
-                deposit: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_deposit.value : null),
-                sale_remaining: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_remaining.value : null),
-            };
-            console.log('new_sale_data: ', new_sale_data);
+                    document.getElementById('customer_name').classList.add('input-error');
+                    
+                    document.getElementById('warning-message').textContent = '*Please insert customer name';
+                }else{
+                    var new_sale_data = {
+                        // customer data
+                        checkbox: true,
+                        customerId: checkbox.checked ? customerId : null,
+                        name: checkbox.checked ? customer_name.value : null,
+                        ic_passport_num: checkbox.checked ? ic_passport_num.value : null,
+                        telephone_num: checkbox.checked ? telephone_num.value : null,
+                        address: checkbox.checked ? address.value : null,
+                        left_eye_degree: checkbox.checked ? left_eye_degree.value : null,
+                        right_eye_degree: checkbox.checked ? right_eye_degree.value : null,
+                        remarks: checkbox.checked ? remarks.value : null,
 
+                        // sale data
+                        description: sale_description.value,
+                        price: sale_price.value,
+                        is_paid: paymentStatus.value === "1" ? true : false,
+                        deposit: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_deposit.value : null),
+                        sale_remaining: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_remaining.value : null),
+                    };
+                    // console.log('new_sale_data: ', new_sale_data);
 
-            fetch('{{ route('sale.store') }}', {
-                method: 'POST',
-                body: JSON.stringify(new_sale_data), // Convert data to JSON
-                headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Content-Type': 'application/json' }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok: ',response.status);
+                    fetch('{{ route('sale.store') }}', {
+                        method: 'POST',
+                        body: JSON.stringify(new_sale_data), // Convert data to JSON
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Content-Type': 'application/json' }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok: ',response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data =>{
+                        window.location.href = '/sale/list';
+                        // console.log(data);
+                    })
+                    .catch(error => {
+                        console.error('There was a problem with the fetch operation:', error.message);
+                    });
                 }
-                return response.json();
-            })
-            .then(data =>{
-                window.location.href = '/sale/list';
-                // console.log(data);
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error.message);
-            });
+            }else{
+                var new_sale_data = {
+                        // customer data
+                        checkbox: false,
+                        customerId: checkbox.checked ? customerId : null,
+                        name: checkbox.checked ? customer_name.value : null,
+                        ic_passport_num: checkbox.checked ? ic_passport_num.value : null,
+                        telephone_num: checkbox.checked ? telephone_num.value : null,
+                        address: checkbox.checked ? address.value : null,
+                        left_eye_degree: checkbox.checked ? left_eye_degree.value : null,
+                        right_eye_degree: checkbox.checked ? right_eye_degree.value : null,
+                        remarks: checkbox.checked ? remarks.value : null,
 
+                        // sale data
+                        description: sale_description.value,
+                        price: sale_price.value,
+                        is_paid: paymentStatus.value === "1" ? true : false,
+                        deposit: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_deposit.value : null),
+                        sale_remaining: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_remaining.value : null),
+                    };
+                    console.log('new_sale_data: ', new_sale_data);
+
+                    fetch('{{ route('sale.store') }}', {
+                        method: 'POST',
+                        body: JSON.stringify(new_sale_data), // Convert data to JSON
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Content-Type': 'application/json' }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok: ',response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data =>{
+                        window.location.href = '/sale/list';
+                        console.log(data);
+                        // if (data.error) {
+                        //     // Show the error message to the user
+                        //     alert('An error occurred: ' + data.error);
+                        // } else {
+                        //     // Process the successful response
+                        //     console.log(data);
+                        //     // Redirect to another page if needed
+                        //     // window.location.href = '/sale/list';
+                        // }
+                    })
+                    .catch(error => {
+                        console.error('There was a problem with the fetch operation:', error.message);
+                    });
+            }
+            
         });
 
         // customer update degree button

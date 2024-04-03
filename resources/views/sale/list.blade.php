@@ -1,5 +1,5 @@
 @extends ('layoutNavigate')
-
+@section('title',__('txt.link.sale.show_all'))
 @section('content')
 
 @if($errors->any())
@@ -11,7 +11,6 @@
 
 <div class="container mt-1">    
     <div class="row">
-
         <div class="col-md-4 ">
                 {{ $sales->onEachSide(1)->appends(request()->query())->links() }}
         </div>
@@ -68,6 +67,13 @@
                     @endif
                 </td>
                 <td>{{$sale->created_at->format('d/m/Y')}}</td>
+                <td>
+                    <ul class="nav nav-pills">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="{{route('sale.detail', ['id' => $sale->id])}}">🔍</a>
+                        </li>
+                    </ul>
+                </td>
             </tr>
         @endforeach
     </tbody>

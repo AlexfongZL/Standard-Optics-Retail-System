@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Customers;
 use App\Models\Sales;
 use App\Models\Installments;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -43,8 +44,7 @@ class InstallmentController extends Controller
         return view('installment.list', compact('not_fully_paid_sales'));
     }
 
-    // update installment
-    // CR "U" D
+    // update installment, CR "U" D
     public function update_installment(Request $request){
         $validator = Validator::make($request->all(), [
             'sales_id' => 'required|exists:sales,id',
@@ -65,13 +65,15 @@ class InstallmentController extends Controller
                 'payment_amount' => $request->input('new_installment_value'),
             ]);
 
+            $this->update_is_paid_status($request->input('sales_id'));
+
             // Return success response
             return response()->json([
                 'message' => 'Installment updated successfully',
             ]);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete degree'], 500);
+            return response()->json(['error' => 'Failed to update installment'], 500);
         }
     }
 
@@ -96,7 +98,7 @@ class InstallmentController extends Controller
             ]);
         }catch (\Exception $e) {
             // Return error message if something went wrong
-            return response()->json(['message' => 'Failed to fetch all degree data'], 500);
+            return response()->json(['message' => 'Failed to fetch all installment data'], 500);
         }  
     }
 
@@ -119,9 +121,12 @@ class InstallmentController extends Controller
 
             $installmentDelete->delete();
 
+            $this->update_is_paid_status($request->input('sales_id'));
+
             // Return success response
             return response()->json([
                 'message' => 'Installment deleted successfully',
+                'sales_id' => $request->input('sales_id'),
             ]);
 
         } catch (\Exception $e) {
@@ -133,7 +138,7 @@ class InstallmentController extends Controller
     // to add new installment into a particular sale "C" RUD
     public function add_new_installment(Request $request){
         $validator = Validator::make($request->all(), [
-            'id' => 'required|exists:sales,id',
+            'sales_id' => 'required|exists:sales,id',
             'payment_amount' => 'required|numeric|between:0,99999',
         ]);
 
@@ -143,19 +148,49 @@ class InstallmentController extends Controller
         }
 
         try{
+            // create/pay new installment
             Installments::create([
-                'sales_id' => $request->input('id'),
+                'sales_id' => $request->input('sales_id'),
                 'payment_amount' => $request->input('payment_amount', 0.0),
             ]);
 
+            $this->update_is_paid_status($request->input('sales_id'));
+
             return response()->json([
-                // 'message' => 'Data saved successfully',
-                'id' => $request->input('id'),
-                'payment_amount' => $request->input('payment_amount'),
+                'message' => 'Data saved successfully',
+                // 'id' => $request->input('id'),
+                // 'payment_amount' => $request->input('payment_amount'),
             ]);
         } catch (\Exception $e) {
             // Return error message if something went wrong
             return response()->json(['message' => 'Failed to save data'], 500);
         }       
     }
+
+    private function update_is_paid_status(int $saleId): void{
+        try {
+            // Retrieve sale details, ensuring necessary fields are present
+            $sale = Sales::where('id', $saleId)
+                        ->firstOrFail();
+
+            // Calculate total installment paid
+            $total_installment_paid_value = Installments::where('sales_id', $saleId)
+                                                ->sum('payment_amount');
+
+            // Validate price, deposit, and payment amounts
+            $full_price_value = $sale ? ($sale->price ?? 0.00) : 0.00;
+            $deposit_paid_value = $sale ? ($sale->deposit ?? 0.00) : 0.00;
+            $total_installment_paid_value = $total_installment_paid_value ? ($total_installment_paid_value ?? 0.00) : 0.00;
+
+            $is_paid = ($deposit_paid_value + $total_installment_paid_value >= $full_price_value) ? 1 : 0;
+            
+            if ($sale->is_paid !== $is_paid) {
+                $sale->is_paid = $is_paid;
+                $sale->save();
+            }
+        } catch (Exception $e) {
+            echo 'Error updating is_paid status: ' . $e->getMessage();
+        }
+    }
+
 }

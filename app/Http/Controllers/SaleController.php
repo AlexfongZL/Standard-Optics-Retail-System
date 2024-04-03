@@ -48,6 +48,7 @@ class SaleController extends Controller
 
     // create new sale
     public function store(Request $request){
+        $checkbox = $request->input('checkbox'); // checkbox to input customer details
         $customerId = $request->input('customerId');
         $name = $request->input('name');
         $ic_passport_num = $request->input('ic_passport_num');
@@ -62,145 +63,111 @@ class SaleController extends Controller
         $is_paid = $request->input('is_paid');
         $deposit = $request->input('deposit');
         // $sale_remaining = $request->input('sale_remaining');
-
-        $latestDegrees = Degrees::where('customers_id', $customerId)
-                                ->orderBy('created_at', 'desc')
-                                ->first();
         
-        // if existing customer details is insert...
-        if ($customerId !== null && Customers::where('id', $customerId)->exists())
-        {
-            Sales::create(array_merge(
-                $request->validate([
-                    'description' => 'nullable|string|max:255',
-                    // 'price' => 'required|numeric|max:10',
-                    'price' => 'required|numeric|between:0,99999',
-                    'is_paid' => 'required|boolean',
-                    // 'deposit' => 'nullable|numeric|max:10',
-                    'deposit' => 'nullable|numeric|between:0,99999',
-                ]),
-                ['customers_id' => $customerId, 'fully_paid_date' => $is_paid ? now() : null]
-            ));
+        // if "Insert Customer Details" checkbox is ticked
+        if($checkbox){
+             // if customer exist
+            if($customerId !== null){
+                // Sales::create(array_merge(
+                //     $request->validate([
+                //         'description' => 'nullable|string|max:255',
+                //         // 'price' => 'required|numeric|max:10',
+                //         'price' => 'required|numeric|between:0,99999',
+                //         'is_paid' => 'required|boolean',
+                //         // 'deposit' => 'nullable|numeric|max:10',
+                //         'deposit' => 'nullable|numeric|between:0,99999',
+                //     ]),
+                //     ['customers_id' => $customerId, 'fully_paid_date' => $is_paid ? now() : null]
+                // ));
 
-            if (!$latestDegrees || $latestDegrees->left_eye_degree !== $currentLeftEyeDegree || $latestDegrees->right_eye_degree !== $currentRightEyeDegree) {
-                // Add the new degrees to the database
-                Degrees::create([
-                    'customers_id' => $customerId,
-                    'left_eye_degree' => $currentLeftEyeDegree,
-                    'right_eye_degree' => $currentRightEyeDegree,
+                $this->create_sale_function($description, $price, $is_paid, $deposit, $customerId);
+
+                $latestDegrees = Degrees::where('customers_id', $customerId)
+                                        ->orderBy('created_at', 'desc')
+                                        ->first();
+                
+                if (!$latestDegrees || $latestDegrees->left_eye_degree !== $currentLeftEyeDegree || $latestDegrees->right_eye_degree !== $currentRightEyeDegree) {
+                    // Add the new degrees to the database
+                    Degrees::create([
+                        'customers_id' => $customerId,
+                        'left_eye_degree' => $currentLeftEyeDegree,
+                        'right_eye_degree' => $currentRightEyeDegree,
+                    ]);
+                }
+    
+                return response()->json([
+                    'message' => 'Sales Data Added Successfully with customer id included.',
+                    'checkbox' => $request->input('checkbox'),
+                ]);
+    
+            }
+            // if insert new customer with details
+            else{
+                // inserting into "customers" table
+                $validated_customer_data = $request->validate([
+                    'name' => 'nullable|string|max:255',
+                    'ic_passport_num' => 'nullable|string|max:30',
+                    'telephone_num' => 'nullable|string|max:30',
+                    'address' => 'nullable|string|max:255',
+                    'remarks' => 'nullable|string|max:255'
+                ]);
+
+                // Apply rtrim to all values in $validated_customer_data
+                foreach ($validated_customer_data as $key => $value) {
+                    // Remove whitespace after the last character in the value
+                    $validated_customer_data[$key] = rtrim($value);
+                }
+
+                $new_customer = Customers::create($validated_customer_data);
+
+                $this->create_sale_function($description, $price, $is_paid, $deposit, $new_customer->id);
+
+                if($request->left_eye_degree || $request->right_eye_degree != null){
+                    // inserting into "degrees" table
+                    $new_customer_id = $new_customer->id;
+                    $validated_customer_degree = $request->validate([
+                        'left_eye_degree' => 'nullable|string|max:255',
+                        'right_eye_degree' => 'nullable|string|max:255',
+                    ]);
+
+                    // Apply rtrim to all values in $validated_customer_degree
+                    foreach ($validated_customer_degree as $key => $value) {
+                        // Remove whitespace after the last character in the value
+                        $validated_customer_degree[$key] = rtrim($value);
+                    }
+
+                    Degrees::create([
+                        'customers_id' => $new_customer_id,
+                        'left_eye_degree' => $validated_customer_degree['left_eye_degree'],
+                        'right_eye_degree' => $validated_customer_degree['right_eye_degree'],
+                    ]);
+                }
+
+                return response()->json([
+                    'message' => 'Sales Data Added Successfully with customer id included.',
+                    'checkbox' => $request->input('checkbox'),
                 ]);
             }
+        }
 
-            return response()->json([
-                'message' => 'Sales Data Added Successfully with customer id included.',
-            ]);
-
-        }else{
-            Sales::create(array_merge(
-                $request->validate([
-                    'description' => 'nullable|string|max:255',
-                    // 'price' => 'required|numeric|max:10',
-                    'price' => 'required|numeric|between:0,99999',
-                    'is_paid' => 'required|boolean',
-                    // 'deposit' => 'nullable|numeric|max:10',
-                    'deposit' => 'nullable|numeric|between:0,99999',
-                ]),
-                ['fully_paid_date' => $is_paid ? now() : null]
-            ));
+        // if "Insert Customer Details" checkbox is not ticked
+        else{
+            // customer id is === null            
+            $this->create_sale_function($description, $price, $is_paid, $deposit, null);
 
             return response()->json([
                 'message' => 'Sales Data Added Successfully without customer id.',
+                'description' => $description,
+                'price' => $price,
+                'is_paid' => $is_paid,
+                'deposit' => $deposit,
+                'customerId' => $customerId,
             ]);
         }
-
-        // return Redirect::route('sale.list')->with('data', json($results));
-        // else{// new customer, new sale
-        //     // @@@@@@@@@@@@@@@ CUSTOMER @@@@@@@@@@@@@@@ 
-
-        //     // $new_customer = Customers::create(array_merge(
-        //     //     $request->validate([
-        //     //         'name' => 'nullable|string|max:255',
-        //     //         'ic_passport_num' => 'nullable|string|max:30',
-        //     //         'telephone_num' => 'nullable|string|max:30',
-        //     //         'address' => 'nullable|string|max:255',
-        //     //         'remarks' => 'nullable|string|max:255'
-        //     //     ]),
-        //     //     ['created_at' => now()]
-        //     // ));
-            
-        //     $validated_customer_data = $request->validate([
-        //         'name' => 'nullable|string|max:255',
-        //         'ic_passport_num' => 'nullable|string|max:30',
-        //         'telephone_num' => 'nullable|string|max:30',
-        //         'address' => 'nullable|string|max:255',
-        //         'remarks' => 'nullable|string|max:255'
-        //     ]);
-
-        //     $validated_customer_data = array_map('rtrim', $validated_customer_data);
-
-        //     $new_customer = Customers::create(array_merge(
-        //         $validated_customer_data,
-        //         ['created_at' => now()]
-        //     ));
-        //     // @@@@@@@@@@@@@@@ CUSTOMER END @@@@@@@@@@@@@@@ 
-
-
-
-
-        //     // @@@@@@@@@@@@@@@ SALES @@@@@@@@@@@@@@@ 
-            
-        //     // Sales::create(array_merge(
-        //     //     $request->validate([
-        //     //         'description' => 'nullable|string|max:255',
-        //     //         'price' => 'required|numeric',
-        //     //         'is_paid' => 'nullable|string|max:30',
-        //     //         'deposit' => 'required|numeric',
-        //     //     ]),
-        //     //     ['customers_id' => $new_customer->id, 'created_at' => now()]
-        //     // ));
-        //     $validated_sale_data = $request->validate([
-        //         'description' => 'nullable|string|max:255',
-        //         'price' => 'required|numeric',
-        //         'is_paid' => 'nullable|string|max:30',
-        //         'deposit' => 'required|numeric',
-        //     ]);
-
-        //     $validated_sale_data = array_map('rtrim', $validated_sale_data);
-
-        //     Saless::create(array_merge(
-        //         $validated_sale_data,
-        //         ['customers_id' => $new_customer->id, 'created_at' => now()]
-        //     ));
-
-        //     // @@@@@@@@@@@@@@@ SALES END @@@@@@@@@@@@@@@ 
-
-
-
-
-        //     // @@@@@@@@@@@@@@@ DEGREE @@@@@@@@@@@@@@@ 
-        //     if($request->input('left_eye_degree') || $request->input('right_eye_degree') != null){
-        //         $validated_customer_degree = $request->validate([
-        //             'left_eye_degree' => 'nullable|string|max:255',
-        //             'right_eye_degree' => 'nullable|string|max:255',
-        //         ]);
-
-        //         $validated_customer_degree = array_map('rtrim', $validated_customer_degree);
-    
-        //         Degrees::create([
-        //             'customers_id' => $new_customer->id,
-        //             'left_eye_degree' => $validated_customer_degree['left_eye_degree'],
-        //             'right_eye_degree' => $validated_customer_degree['right_eye_degree'],
-        //         ]);
-        //     }
-
-        //     // @@@@@@@@@@@@@@@ DEGREE END @@@@@@@@@@@@@@@ 
-        // }
-        
     }
 
     // to see the sale's detail
-    public function detail($id)
-    {
+    public function detail($id){
         // Validate the ID parameter
         $validatedId = $this->validateId($id);
 
@@ -229,4 +196,116 @@ class SaleController extends Controller
         ]);
     }
 
+    // update installment, CR "U" D
+    public function update_sale(Request $request){
+        $validator = Validator::make($request->all(), [
+            'sales_id' => 'required|exists:sales,id',
+        ]);
+
+        if ($validator->fails()) {
+            // Return validation errors
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $saleUpdate = Sales::where('id', $request->input('sales_id'))->firstOrFail();
+
+            if ($request->input('new_price_value')) {
+                $saleUpdate->update(['price' => $request->input('new_price_value')]);
+            }
+
+            if ($request->input('new_deposit_value')) {
+                $saleUpdate->update(['deposit' => $request->input('new_deposit_value')]);
+            }
+
+            
+            // Return success response
+            return response()->json([
+                'message' => 'Sale details updated successfully',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update installment'], 500);
+        }
+    }
+
+    // function to delete degree based on sale id && customer id
+    public function delete_sale(Request $request){
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:sales,id',
+            'customers_id' => 'required|exists:customers,id',
+        ]);
+
+        if ($validator->fails()) {
+            // Return validation errors
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $sale = Sales::where('id', $request->input('id'))
+                            ->where('customers_id', $request->input('customers_id'))
+                            ->firstOrFail();
+            $sale->delete();
+
+            // ## THIS WILL YIELD ERROR WHEN DELETE A SALES THAT DONT HAVE INSTALLMENT. FIX THIS!
+            // $saleInstallment = Installments::where('sales_id', $request->input('id'))
+            //                                 ->firstOrFail();
+
+            // $saleInstallment->delete();
+
+            // Check if there are any associated installments before attempting to delete them
+            $saleInstallment = Installments::where('sales_id', $request->input('id'))->first();
+
+            if ($saleInstallment) {
+                $saleInstallment->delete();
+            }
+
+            // Return success response
+            return response()->json([
+                'message' => 'Sale and subsequent installment data deleted successfully',
+                // 'id' => $request->input('customers_id'),
+            ]);
+
+        } catch (\Exception $e) {
+            // Return error response if deletion fails
+            return response()->json(['error' => 'Failed to delete degree'], 500);
+        }
+    }
+
+    public function create_sale_function(string $description, float $price, bool $is_paid, float $deposit, ?int $customerId) {
+        $validator = Validator::make([
+            'description' => $description,
+            'price' => $price,
+            'is_paid' => $is_paid,
+            'deposit' => $deposit,
+            'customers_id' => $customerId,
+        ], [
+            'description' => 'nullable|string|max:255',
+            'price' => 'required|numeric|between:0,99999',
+            'is_paid' => 'required|boolean',
+            'deposit' => 'nullable|numeric|between:0,99999',
+            // 'customers_id' => 'required|exists:customers,id',
+            'customers_id' => 'nullable',
+        ]);
+
+        if ($validator->fails()) {
+            // Validation failed, return error messages or throw an exception
+            return $validator->errors();
+        }
+
+        // Validation passed, create the sale
+        Sales::create([
+            'description' => $description,
+            'price' => $price,
+            'is_paid' => $is_paid,
+            'deposit' => $deposit,
+            // 'customers_id' => $customerId,
+            'customers_id' => $customerId ?? null,
+            'fully_paid_date' => $is_paid ? now() : null
+        ]);
+
+        return response()->json(['error' => 'Description of the error'], 422);
+    }
+
+    
 }

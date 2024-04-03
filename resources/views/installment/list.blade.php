@@ -1,5 +1,5 @@
 @extends ('layoutNavigate')
-
+@section('title',__('txt.link.installment.show_all'))
 @section('content')
 
 @if($errors->any())

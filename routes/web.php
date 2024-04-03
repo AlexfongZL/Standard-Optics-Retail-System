@@ -4,11 +4,19 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\InstallmentController;
+use App\Http\Controllers\DatabaseController;
+use App\Http\Controllers\ImportController;
+
+// use Spatie\Backup\Backup;
 
 // main page
 Route::get('/', function () {
     return view('home');
 })->name('home');
+
+Route::post('/database/dump',[DatabaseController::class, 'dump'])->name('database.dump');
+Route::get('/database/import', function () {return view('importexcel');})->name('importexcel');
+Route::post('/database/import',[DatabaseController::class, 'importexcel'])->name('database.importexcel');
 
 // .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
 // | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
@@ -109,6 +117,13 @@ Route::get('/sale/detail/{id}',[
     SaleController::class, 'detail'
 ])->name('sale.detail');
 
+Route::post('/sale/update_sale',[
+    SaleController::class, 'update_sale'
+])->name('sale.update_sale');
+
+Route::post('/sale/delete_sale',[
+    SaleController::class, 'delete_sale'
+])->name('sale.delete_sale');
 
 // .----------------.  .-----------------. .----------------.  .----------------.  .----------------.  .----------------. 
 // | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
@@ -151,6 +166,10 @@ Route::post('/installment/delete_installment',[
 Route::post('/installment/add_new_installment',[
     InstallmentController::class, 'add_new_installment'
 ])->name('installment.add_new_installment');
+
+// Route::get('/installment/add_new_installment',[
+//     InstallmentController::class, 'add_new_installment'
+// ])->name('installment.add_new_installment');
 
 // .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
 // | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |

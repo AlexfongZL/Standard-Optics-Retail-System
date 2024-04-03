@@ -13,6 +13,7 @@ return [
             'title' => 'Customer',
             'show_all' => '👥📋 Show All Customer',
             'add_new' => '👥➕ Add New Customer',
+            'details' => '👥🔎 Customer Details',
         ],
 
         // sale page and buttons
@@ -20,12 +21,14 @@ return [
             'title' => 'Sale',
             'show_all' => '💰📋 Show All Sale',
             'add_new' => '💰➕ Add New Sale',
+            'details' => '💰🔎 Sale Details',
         ],
 
         // installment page and buttons
         'installment' =>[
             'title' => 'Overdue Payment',
             'show_all' => '📅📋 Show All Overdue Payment',
+            'details' => '📅🔎 Payment Details', // N/A
         ],
     ],
 
@@ -57,13 +60,13 @@ return [
 
     'customer' => [
         'name' => 'Name',
-        'ic_passport' => '🪪',
-        'telephone' => '☎️',
-        'address' => '🏡',
+        'ic_passport' => '🪪 IC/Passport',
+        'telephone' => '☎️ Telephone',
+        'address' => '🏡 Address',
         'left_eye_degree' => '👁️ Left',
         'right_eye_degree' => 'Right 👁️',
-        'remarks' => '📝',
-        'created_at' => '📆',
+        'remarks' => '📝 Remarks',
+        'created_at' => '📆 Date',
         
         'details' => [
             'vision_history' => '👓 Vision History 🕶️',

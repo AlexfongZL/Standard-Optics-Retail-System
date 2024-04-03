@@ -11,7 +11,6 @@ class CustomerController extends Controller
 {
     // list all the customer detail with pages
     public function list(){
-         
         $customers = Customers::orderBy('created_at', 'desc')
                         ->paginate(7);
 
@@ -26,13 +25,13 @@ class CustomerController extends Controller
             $customer->latest_right_eye_degree = $latestDegree ? $latestDegree->right_eye_degree : null;
         }
 
-        // return view('customer.list',['customers' => $customers]);
-        return view('customer.list', compact('customers'));
+        return view('customer.list',['customers' => $customers]);
+        // return view('customer.list', compact('customers'));
     }
 
     // create new customer
     public function store(Request $request){
-        // inserting into "customers" table
+        
         $validated_customer_data = $request->validate([
             'name' => 'nullable|string|max:255',
             'ic_passport_num' => 'nullable|string|max:30',
@@ -49,7 +48,7 @@ class CustomerController extends Controller
 
         $new_customer = Customers::create($validated_customer_data);
 
-        if($request->left_eye_degree || $request->right_eye_degree != null){
+        if($request->input('left_eye_degree') || $request->input('right_eye_degree') != null){
             // inserting into "degrees" table
             $new_customer_id = $new_customer->id;
             $validated_customer_degree = $request->validate([
@@ -70,8 +69,12 @@ class CustomerController extends Controller
             ]);
         }
         
-
-        return view('customer.create');
+        // $this->list();
+        // return view('customer.list');
+        return response()->json([
+            'message' => 'Customer Data Added Successfully.',
+            // 'checkbox' => $request->input('checkbox'),
+        ]);
     }
 
     // show customer details
@@ -143,6 +146,7 @@ class CustomerController extends Controller
 
         // Search for customers whose name contains the search query
         $results = Customers::where('name', 'like', '%' . $query . '%')
+                            ->orderBy('created_at', 'desc')
                             ->paginate(7);
 
         $results->appends(['query' => $query]);

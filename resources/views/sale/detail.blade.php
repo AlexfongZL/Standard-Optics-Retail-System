@@ -1,5 +1,5 @@
 @extends ('layoutNavigate')
-@section('title',__('txt.link.customer.add_new'))
+@section('title',__('txt.link.sale.details'))
 @section('content')
 
 @if(session('success'))
@@ -29,7 +29,11 @@
     <div class="input-group mb-1">
         <span class="input-group-text" id="basic-addon1">{{__('txt.customer.telephone')}}:</span>
         <input type="text" class="form-control" name="telephone_num" aria-describedby="basic-addon1" value="{{ $sale_details->customer_details->telephone_num ?? '' }}" maxlength="30" disabled>
-    </div>    
+    </div>
+
+    <div class="d-grid ">
+        <button id="saveButton" style="display: none;" class="btn btn-success" type="submit">Save</button>
+    </div>
 </form>
 
 <p></p>
@@ -49,25 +53,51 @@
                         <th scope="col" style="text-align: right;">{{__('txt.sale.details.amount')}}</th>
                         <th colspan="2">
                             <button type="button" class="btn btn-outline-success" id="addPaymentButton" style="min-width: 100px; font-weight: bold;">+</button>
+                            <!-- <a href="{{ route('installment.add_new_installment', ['sales_id' => '49','payment_amount' => '100.00']) }}">add</a> -->
+
                         </th>
                     </tr>
                 </thead>
-                <tbody id="degreeRows">
+                <tbody>
                     <!-- full price -->
-                    <tr>
+                    <tr class="sale-price">
                         <td>{{ $sale_details->created_at->format('d-m-Y') }}</td>
                         <td>{{__('txt.sale.details.price')}}</td>
-                        <td id="sale-price" style="text-align: right;">{{ $sale_details->price }}</td>
-                        <td colspan="2"></td>
+                        <td class="payments exclude" id="sale-price" style="text-align: right;">{{ $sale_details->price }}</td>
+                        <td>
+                            <button class="editButton btn btn-warning">
+                                ✏️
+                            </button>
+                            <button class="saveButton btn btn-success" style="display: none;fontWeight: bold;">
+                                Save
+                            </button>
+                        </td>
+                        <td>
+                            <button class="cancelButton btn btn-danger" style="display: none;">
+                                Cancel
+                            </button>
+                        </td>
                     </tr>
 
                     <!-- deposit -->
                     <!-- <tr style="border-bottom: 1px solid black;"> -->
-                    <tr>
+                    <tr class="sale-deposit">
                         <td>{{ $sale_details->created_at->format('d-m-Y') }}</td>
                         <td>{{__('txt.sale.details.deposit')}}</td>
-                        <td id="sale-deposit" style="text-align: right;">({{ $sale_details->deposit }})</td>
-                        <td colspan="2"></td>
+                        <td class="payments exclude" id="sale-deposit" style="text-align: right;">({{ $sale_details->deposit }})</td>
+                        <td>
+                            <button class="editButton btn btn-warning">
+                                ✏️
+                            </button>
+                            <button class="saveButton btn btn-success" style="display: none;fontWeight: bold;">
+                                Save
+                            </button>
+                        </td>
+                        <td>
+                            <button class="cancelButton btn btn-danger" style="display: none;">
+                                Cancel
+                            </button>
+                        </td>
                     </tr>
 
                     <tr>
@@ -85,10 +115,10 @@
 
                 <tbody id="installmentRows">
                         @foreach ($installments as $installment)
-                        <tr>
+                        <tr class="sale-installment">
                             <td>{{$installment->created_at->format('d-m-Y')}}</td>
                             <td>{{__('txt.sale.details.installment')}}</td> 
-                            <td class="installment-payment" style="text-align: right;">({{$installment->payment_amount}})</td>
+                            <td class="payments" style="text-align: right;">({{$installment->payment_amount}})</td>
                             <td>
                                 <button class="editButton btn btn-warning" data-id="{{ $installment->id }}">
                                     ✏️
@@ -108,11 +138,11 @@
                         </tr>
                         @endforeach
 
-                    <tr>
-                        <th colspan="2">{{__('txt.sale.details.remaining')}} (RM)</th>
-                        <th style="text-decoration: underline; text-align: right;" id="remaining-payment"></th>
-                        <th colspan="2"></td>
-                    </tr>
+                        <tr>
+                            <th colspan="2">{{__('txt.sale.details.remaining')}} (RM)</th>
+                            <th style="text-decoration: underline; text-align: right;" id="remaining-payment"></th>
+                            <th colspan="2"></td>
+                        </tr>
                 </tbody>
             </table>
         </div>
@@ -166,10 +196,10 @@
             data.forEach(item => {
                 for (var i = 0; i < item.length; i++) {
                     bodyContent += `
-                    <tr>
+                    <tr class="sale-installment">
                         <td>${formatDate(item[i].created_at)}</td>
                         <td>{{__('txt.sale.details.installment')}}</td>
-                        <td class="installment-payment" style="text-align: right;">(${item[i].payment_amount})</td>
+                        <td class="payments" style="text-align: right;">(${item[i].payment_amount})</td>
                         <td>
                             <button class="editButton btn btn-warning" data-id="${item[i].id}">
                                 ✏️
@@ -243,7 +273,9 @@
                     return response.json();
                 })
                 .then(data => {
-                    fetchAllInstallment();
+                    // console.log(JSON.stringify(data));
+                    // fetchAllInstallment();
+                    window.location.reload();
                 })
                 .catch(error => {
                     console.error('Error performing deletion:', error);
@@ -258,26 +290,38 @@
 
                 // get installment id
                 const id = this.getAttribute('data-id');
+                const row = button.closest('tr');
+                const deleteButton = row.querySelector('.deleteButton');
 
                 var to_be_editted_installment = {
                     sales_id: {{ $sale_details->id }},
-                    installment_id: id, // installment id
+                    installment_id: id ? id : null, // installment id
                 };
 
-                var row = button.closest('tr');
+                // console.log('to_be_editted_installment',to_be_editted_installment);
         
-                // Get the left eye degree and right eye degree cells
-                var installmentPaymentCell = row.querySelector('.installment-payment');
+                // Get the installment payment cells
+                var paymentCell = row.querySelector('.payments');
                 
                 // Get the current values
-                var installmentValue = installmentPaymentCell.textContent.trim().replace(/[()]/g, "");
-                
-                // Replace the cells with input fields
-                installmentPaymentCell.innerHTML = `<input class="form-control" style="text-align: right;" id="updatedInstallmentPaymentValue" type="number" value="${installmentValue}" maxlength="255" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">`;
+                var value = paymentCell.textContent.trim().replace(/[()]/g, "");
+                console.log('value: ',value);
 
+                // Replace the cells with input fields
+                if(row.classList.contains('sale-price')){
+                    paymentCell.innerHTML = `<input class="form-control" style="text-align: right;" id="newPriceValue" type="number" value="${value}" maxlength="255" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">`;
+                }
+                if(row.classList.contains('sale-deposit')){
+                    paymentCell.innerHTML = `<input class="form-control" style="text-align: right;" id="newDepositValue" type="number" value="${value}" maxlength="255" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">`;
+                }
+                if(row.classList.contains('sale-installment')){
+                    paymentCell.innerHTML = `<input class="form-control" style="text-align: right;" id="newInstallmentValue" type="number" value="${value}" maxlength="255" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">`;
+                }
+                
                 // hide the edit and delete button
                 button.style.display = 'none';
-                row.querySelector('.deleteButton').style.display = 'none';
+                // row.querySelector('.deleteButton').style.display = 'none';
+                if(deleteButton){deleteButton.style.display = 'none';}
 
                 // show save and cancel button
                 row.querySelector('.saveButton').style.display = 'inline-block';
@@ -289,50 +333,95 @@
 
                 // when save edit button clicked
                 row.querySelector('.saveButton').addEventListener('click', function(){
-                    updateInstallment(to_be_editted_installment);
+                    if(to_be_editted_installment.installment_id !== null){
+                        updateInstallment(to_be_editted_installment, true);
+                    }
+                    if(to_be_editted_installment.installment_id === null){
+                        updateInstallment(to_be_editted_installment, false);
+                    }
                 });
 
                 // when cancel button clicked
                 row.querySelector('.cancelButton').addEventListener('click', function(){
-                    fetchAllInstallment();
+                    if(to_be_editted_installment.installment_id !== null){
+                        // fetchAllInstallment();
+                        window.location.reload();
+                    }
+                    if(to_be_editted_installment.installment_id === null){
+                        window.location.reload();
+                    }
                 });
             });
         });
     }
 
-    function updateInstallment(to_be_editted_installment){
+    function updateInstallment(to_be_editted_installment,isUpdateInstallment){
         var data = {
             installment_id: to_be_editted_installment.installment_id,
             sales_id : to_be_editted_installment.sales_id,
-            new_installment_value: document.getElementById('updatedInstallmentPaymentValue').value.trim().replace(/[()]/g, ""),
+            new_price_value: document.getElementById('newPriceValue') ? document.getElementById('newPriceValue').value.trim().replace(/[()]/g, "") : null,
+            new_deposit_value: document.getElementById('newDepositValue') ? document.getElementById('newDepositValue').value.trim().replace(/[()]/g, "") : null,
+            // new_installment_value: document.getElementById('newInstallmentValue').value.trim().replace(/[()]/g, ""),
+            new_installment_value: document.getElementById('newInstallmentValue') ? document.getElementById('newInstallmentValue').value.trim().replace(/[()]/g, "") : null,
         }
 
-        // console.log('To be updated installment data: ',data );
-        fetch('{{ route('installment.update_installment') }}', {
-            method: 'POST',
-            body: JSON.stringify(data), // Convert data to JSON
-            headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Content-Type': 'application/json' }
-        })
-        .then(response => {
-            if (!response.ok) {
-                console.log("Response not okay. Sent data: ",data);
-                throw new Error('Network response was not ok: ',response.status);
-            }
-            return response.json();
-        })
-        .then(data =>{
-            // console.log(JSON.stringify(data));
-            fetchAllInstallment();
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error.message);
-        });
+        // console.log('data: ',data );
+
+        if(isUpdateInstallment){
+            // console.log('To be updated installment data: ',data );
+            fetch('{{ route('installment.update_installment') }}', {
+                method: 'POST',
+                body: JSON.stringify(data), // Convert data to JSON
+                headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.log("Response not okay. Sent data: ",data);
+                    throw new Error('Network response was not ok: ',response.status);
+                }
+                return response.json();
+            })
+            .then(data =>{
+                // console.log(JSON.stringify(data));
+                // fetchAllInstallment();
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error.message);
+            });
+        }
+
+        if(!isUpdateInstallment){
+            // update sales's price or deposit
+            fetch('{{ route('sale.update_sale') }}', {
+                method: 'POST',
+                body: JSON.stringify(data), // Convert data to JSON
+                headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.log("Response not okay. Sent data: ",data);
+                    throw new Error('Network response was not ok: ',response.status);
+                }
+                return response.json();
+            })
+            .then(data =>{
+                console.log(JSON.stringify(data));
+                // fetchAllInstallment();
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error.message);
+            });
+        }
+        
     }
 
     function calculateRemaining() {
-        const installmentPayments = document.querySelectorAll('.installment-payment');
-        const salePriceElement = document.getElementById("sale-price");
-        const saleDepositElement = document.getElementById("sale-deposit");
+        // const installmentPayments = document.querySelectorAll('.payments');
+        const installmentPayments = document.querySelectorAll('.payments:not(.exclude)');
+        const salePriceElement    = document.getElementById("sale-price");
+        const saleDepositElement  = document.getElementById("sale-deposit");
 
         const priceValue = salePriceElement.textContent.trim().replace(/[()]/g, "");
         const depositValue = saleDepositElement.textContent.trim().replace(/[()]/g, "");
@@ -478,7 +567,8 @@
             var payment_amount = installmentPaymentAmountInput.value;
 
             var installment_new_payment = {
-                id: {{ $sale_details->id }},
+                // id: {{ $sale_details->id }},
+                sales_id: {{ $sale_details->id }},
                 payment_amount: payment_amount,
             };
 
@@ -496,7 +586,8 @@
             })
             .then(data =>{
                 // console.log(JSON.stringify(data));
-                fetchAllInstallment();
+                // fetchAllInstallment();
+                window.location.reload();
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error.message);
