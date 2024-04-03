@@ -7,8 +7,8 @@
     @csrf  <button type="submit" class="btn btn-outline-dark">Backup</button>
   </form>
 
-  <form method="GET" action="{{ route('database.import_customer') }}">
-    @csrf  <button id="importData" type="submit" class="btn btn-outline-dark">Import Customer Data</button>
+  <form method="GET" action="{{ route('database.import') }}">
+    @csrf  <button id="importData" type="submit" class="btn btn-outline-dark">Import Data</button>
   </form>
   
   <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
