@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redirect;
 use App\Models\Customers;
 use App\Models\Degrees;
 use App\Imports\CustomerImport;
+use App\Imports\SaleImport;
 
 class DatabaseController extends Controller
 {
@@ -34,7 +35,7 @@ class DatabaseController extends Controller
         return back()->with('success', 'Database dump created successfully!');
     }
 
-    public function importexcel(Request $request){
+    public function import_customer(Request $request){
         $request->validate([
             'import_file'=>[
                 'required',
@@ -43,6 +44,19 @@ class DatabaseController extends Controller
         ]);
 
         Excel::import(new CustomerImport,$request->file('import_file'));
+
+        return redirect()->back()->with('success', 'Excel data imported successfully!');
+    }
+
+    public function import_sale(Request $request){
+        $request->validate([
+            'import_file'=>[
+                'required',
+                'file'
+            ]
+        ]);
+
+        Excel::import(new SaleImport,$request->file('import_file'));
 
         return redirect()->back()->with('success', 'Excel data imported successfully!');
     }

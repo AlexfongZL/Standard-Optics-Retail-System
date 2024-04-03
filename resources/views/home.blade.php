@@ -7,7 +7,7 @@
     @csrf  <button type="submit" class="btn btn-outline-dark">Backup</button>
   </form>
 
-  <form method="GET" action="{{ route('database.importexcel') }}">
+  <form method="GET" action="{{ route('database.import_customer') }}">
     @csrf  <button id="importData" type="submit" class="btn btn-outline-dark">Import Customer Data</button>
   </form>
   

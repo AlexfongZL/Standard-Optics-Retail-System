@@ -15,8 +15,13 @@ Route::get('/', function () {
 })->name('home');
 
 Route::post('/database/dump',[DatabaseController::class, 'dump'])->name('database.dump');
-Route::get('/database/import', function () {return view('importexcel');})->name('importexcel');
-Route::post('/database/import',[DatabaseController::class, 'importexcel'])->name('database.importexcel');
+
+Route::get('/database/import', function () {
+    return view('import');
+})->name('database.import');
+
+Route::post('/database/import_customer',[DatabaseController::class, 'import_customer'])->name('database.import_customer');
+Route::post('/database/import_sale',[DatabaseController::class, 'import_sale'])->name('database.import_sale');
 
 // .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
 // | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
