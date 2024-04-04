@@ -28,7 +28,7 @@
     @method('post')
         <div class="input-group">
             <span class="input-group-text" id="basic-addon1">Customer Name</span>
-            <input type="text" id="customer_name" class="customer-details form-control capitalize" name="name" aria-describedby="basic-addon1" maxlength="255">            
+            <input autocomplete="off" type="text" id="customer_name" class="customer-details form-control capitalize" name="name" aria-describedby="basic-addon1" maxlength="255">            
         </div>
 
         <div class="input-group" id="warning-message" style="color: red;"></div>
@@ -83,6 +83,8 @@
             <span class="input-group-text" id="basic-addon1">Description</span>
             <textarea class="form-control capitalize" id="sale_description" maxlength="255"></textarea>
         </div>
+
+        <div class="input-group" id="warning-message-sale-description" style="color: red;"></div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Price</span>
@@ -411,7 +413,15 @@
                     document.getElementById('customer_name').classList.add('input-error');
                     
                     document.getElementById('warning-message').textContent = '*Please insert customer name';
-                }else{
+                }
+                else if(!document.getElementById('sale_description').value){
+                    event.preventDefault();
+
+                    document.getElementById('sale_description').classList.add('input-error');
+                    
+                    document.getElementById('warning-message-sale-description').textContent = '*Please insert sale description';
+                }
+                else{
                     var new_sale_data = {
                         // customer data
                         checkbox: true,

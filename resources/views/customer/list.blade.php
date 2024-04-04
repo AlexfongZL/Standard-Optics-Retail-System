@@ -20,7 +20,7 @@
             @csrf
             @method('post')
                 <div class="input-group">
-                    <input type="text" class="form-control" id="search-input" placeholder="Search Customer Name" name="query">
+                    <input autocomplete="off" type="text" class="form-control" id="search-input" placeholder="Search Customer Name" name="query">
                     <div class="input-group-append" id="clear-search-button" style="display: none;">
                         <!-- Clear text button -->
                         <button class="btn btn-outline-secondary" type="button" id="clear-search-input">

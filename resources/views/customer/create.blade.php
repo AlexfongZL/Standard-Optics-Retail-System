@@ -7,17 +7,17 @@
     @method('post')
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Customer Name</span>
-            <input type="text" id="customer_name" class="form-control capitalize" placeholder="Example: Ali bin Abu" name="name" aria-describedby="basic-addon1" maxlength="255">
+            <input autocomplete="off" type="text" id="customer_name" class="form-control capitalize" placeholder="Example: Ali bin Abu" name="name" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">IC/Passport No.</span>
-            <input type="text" id="ic_passport_num" class="form-control capitalize" placeholder="Example: 990101-13-1234" name="ic_passport_num" aria-describedby="basic-addon1" maxlength="30">
+            <input autocomplete="off" type="text" id="ic_passport_num" class="form-control capitalize" placeholder="Example: 990101-13-1234" name="ic_passport_num" aria-describedby="basic-addon1" maxlength="30">
         </div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Tel. No.</span>
-            <input type="text" id="telephone_num" class="form-control capitalize" placeholder="Example: 0123456789" name="telephone_num" aria-describedby="basic-addon1" maxlength="30">
+            <input autocomplete="off" type="text" id="telephone_num" class="form-control capitalize" placeholder="Example: 0123456789" name="telephone_num" aria-describedby="basic-addon1" maxlength="30">
         </div>
 
         <div class="input-group mb-3">
