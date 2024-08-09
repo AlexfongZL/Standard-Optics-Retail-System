@@ -25,23 +25,6 @@
                         </form>
                     </div>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Import Sale Excel Data into Database</h4>
-                    </div>
-                    <div class="card-body">
-
-                        <form action="{{ url('/database/import_sale') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-
-                            <div class="input-group">
-                                <input type="file" name="import_file" class="form-control" />
-                                <button type="submit" class="btn btn-primary">Import</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

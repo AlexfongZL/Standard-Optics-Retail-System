@@ -21,7 +21,6 @@ Route::get('/database/import', function () {
 })->name('database.import');
 
 Route::post('/database/import_customer',[DatabaseController::class, 'import_customer'])->name('database.import_customer');
-Route::post('/database/import_sale',[DatabaseController::class, 'import_sale'])->name('database.import_sale');
 
 // .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
 // | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
