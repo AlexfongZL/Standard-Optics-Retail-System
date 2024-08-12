@@ -54,10 +54,13 @@
                 @if(isset($sale->customer_name))
                     <td><a class="link-opacity-100" href="{{route('customer.detail', ['id' => $sale->customer_id])}}">{{$sale->customer_name}}</a></td>
                 @else
-                    <td>{{$sale->customer_name ?? '**not available'}}</td>
+                    <td>{{$sale->customer_name ?? '**Not Available'}}</td>
                 @endif
-
-                <td>{{$sale->description}}</td>
+                <th>
+                    <a href="{{route('sale.detail', ['id' => $sale->id])}}">
+                        {{ $sale->description }}
+                    </a>
+                </th>
                 <td>{{$sale->price}}</td>
                 <td>
                     @if($sale->is_paid)
@@ -67,13 +70,13 @@
                     @endif
                 </td>
                 <td>{{$sale->created_at->format('d/m/Y')}}</td>
-                <td>
+                <!-- <td>
                     <ul class="nav nav-pills">
                         <li class="nav-item">
                             <a class="nav-link" aria-current="page" href="{{route('sale.detail', ['id' => $sale->id])}}">🔍</a>
                         </li>
                     </ul>
-                </td>
+                </td> -->
             </tr>
         @endforeach
     </tbody>

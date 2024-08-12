@@ -11,8 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class SaleController extends Controller
 {
-    private function validateId($id)
-    {
+    private function validateId($id){
         // Perform validation or sanitization on the ID as needed
         // Example: validate that the ID is a positive integer
         return (int) $id;
@@ -67,19 +66,7 @@ class SaleController extends Controller
         // if "Insert Customer Details" checkbox is ticked
         if($checkbox){
              // if customer exist
-            if($customerId !== null){
-                // Sales::create(array_merge(
-                //     $request->validate([
-                //         'description' => 'nullable|string|max:255',
-                //         // 'price' => 'required|numeric|max:10',
-                //         'price' => 'required|numeric|between:0,99999',
-                //         'is_paid' => 'required|boolean',
-                //         // 'deposit' => 'nullable|numeric|max:10',
-                //         'deposit' => 'nullable|numeric|between:0,99999',
-                //     ]),
-                //     ['customers_id' => $customerId, 'fully_paid_date' => $is_paid ? now() : null]
-                // ));
-
+            if($customerId !== null){ // if insert customer (existed customer)
                 $this->create_sale_function($description, $price, $is_paid, $deposit, $customerId);
 
                 $latestDegrees = Degrees::where('customers_id', $customerId)
@@ -100,10 +87,7 @@ class SaleController extends Controller
                     'checkbox' => $request->input('checkbox'),
                 ]);
     
-            }
-            // if insert new customer with details
-            else{
-                // inserting into "customers" table
+            }else{ // if insert totally new customer (non-existed customer) with details
                 $validated_customer_data = $request->validate([
                     'name' => 'nullable|string|max:255',
                     'ic_passport_num' => 'nullable|string|max:30',
@@ -148,11 +132,7 @@ class SaleController extends Controller
                     'checkbox' => $request->input('checkbox'),
                 ]);
             }
-        }
-
-        // if "Insert Customer Details" checkbox is not ticked
-        else{
-            // customer id is === null            
+        }else{ // if "Insert Customer Details" checkbox is not ticked, customer id is === null            
             $this->create_sale_function($description, $price, $is_paid, $deposit, null);
 
             return response()->json([
@@ -181,7 +161,7 @@ class SaleController extends Controller
         }
 
         $sale_details->customer_details = Customers::where('id', $sale_details->customers_id)
-                                                ->select('name','telephone_num')
+                                                ->select('id','name','telephone_num')
                                                 ->first();
 
         // Order installments if needed (assuming you want them in descending order)
@@ -196,7 +176,7 @@ class SaleController extends Controller
         ]);
     }
 
-    // update installment, CR "U" D
+    // update installment, CR "U" D.
     public function update_sale(Request $request){
         $validator = Validator::make($request->all(), [
             'sales_id' => 'required|exists:sales,id',
@@ -218,60 +198,106 @@ class SaleController extends Controller
                 $saleUpdate->update(['deposit' => $request->input('new_deposit_value')]);
             }
 
-            
+            if ($request->input('sale_description')) {
+                $saleUpdate->update(['description' => $request->input('sale_description')]);
+
+                return redirect()->route('sale.detail', ['id' => $saleUpdate])->with('success', 'Sale Description Updated Successfully');
+            }
+
             // Return success response
             return response()->json([
-                'message' => 'Sale details updated successfully',
+                'message' => 'Sale details updated successfully'
             ]);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update installment'], 500);
+            return response()->json([
+                'error' => 'Failed to update sale details'
+            ], 500);
         }
     }
 
     // function to delete degree based on sale id && customer id
     public function delete_sale(Request $request){
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|exists:sales,id',
-            'customers_id' => 'required|exists:customers,id',
-        ]);
+        // to determine whether the request to delete come from 
+        // AJAX request (delete from customer detail page) or 
+        // non-AJAX request (delete from sale detail page).
 
-        if ($validator->fails()) {
-            // Return validation errors
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        // THE REASON TO DIFFERENTIATE REQUEST MADE FROM AJAX AND NON-AJAX (NORMAL SALE DETAIL)
+        // IS BECAUSE IN NON-AJAX PAGE, THERE MAY EXIST SALE THAT DOES NOT HAVE CUSTOMER ID.
+        $fromAJAX = $request->input('fromAJAX');
 
-        try {
-            $sale = Sales::where('id', $request->input('id'))
-                            ->where('customers_id', $request->input('customers_id'))
-                            ->firstOrFail();
-            $sale->delete();
-
-            // ## THIS WILL YIELD ERROR WHEN DELETE A SALES THAT DONT HAVE INSTALLMENT. FIX THIS!
-            // $saleInstallment = Installments::where('sales_id', $request->input('id'))
-            //                                 ->firstOrFail();
-
-            // $saleInstallment->delete();
-
-            // Check if there are any associated installments before attempting to delete them
-            $saleInstallment = Installments::where('sales_id', $request->input('id'))->first();
-
-            if ($saleInstallment) {
-                $saleInstallment->delete();
-            }
-
-            // Return success response
-            return response()->json([
-                'message' => 'Sale and subsequent installment data deleted successfully',
-                // 'id' => $request->input('customers_id'),
+        if($fromAJAX){
+            $validator = Validator::make($request->all(), [
+                // id = sales id
+                'id' => 'required|exists:sales,id',
+                'customers_id' => 'required|exists:customers,id', 
             ]);
-
-        } catch (\Exception $e) {
-            // Return error response if deletion fails
-            return response()->json(['error' => 'Failed to delete degree'], 500);
+    
+            if ($validator->fails()) {
+                // Return validation errors
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+    
+            try {
+                // delete sales, without the customer id attached into it
+                $sale = Sales::where('id', $request->input('id'))
+                                ->where('customers_id', $request->input('customers_id'))
+                                ->firstOrFail()
+                                ->delete();
+    
+                // delete the installments that's under the deleted sale
+                $saleInstallment = Installments::where('sales_id', $request->input('id'))->first();
+    
+                if ($saleInstallment) {
+                    $saleInstallment->delete();
+                }
+    
+                // Return success response
+                    return response()->json([
+                        'message' => 'Sale and subsequent installment data deleted successfully',
+                        // 'id' => $request->input('customers_id'),
+                    ]);
+                    
+            } catch (\Exception $e) {
+                // Return error response if deletion fails
+                return response()->json(['error' => 'Failed to delete degree'], 500);
+            }
+        }else{
+            $validator = Validator::make($request->all(), [
+                // id = sales id
+                'id' => 'required|exists:sales,id'
+            ]);
+    
+            if ($validator->fails()) {
+                // Return validation errors
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+    
+            try {
+                // delete sales, without the customer id attached into it
+                $sale = Sales::where('id', $request->input('id'))
+                                ->firstOrFail()
+                                ->delete();
+    
+                // delete the installments that's under the deleted sale
+                $saleInstallment = Installments::where('sales_id', $request->input('id'))->first();
+    
+                if ($saleInstallment) {
+                    $saleInstallment->delete();
+                }
+    
+                // Return success response
+                return redirect()->route('sale.list')->with('success', 'Sale Successfully Deleted ');
+                    
+            } catch (\Exception $e) {
+                // Return error response if deletion fails
+                return response()->json(['error' => 'Failed to delete degree'], 500);
+            }
         }
     }
 
+    // specific function to create sale.
+    // This function is used in Store()
     public function create_sale_function(string $description, float $price, bool $is_paid, float $deposit, ?int $customerId) {
         $validator = Validator::make([
             'description' => $description,
@@ -299,13 +325,10 @@ class SaleController extends Controller
             'price' => $price,
             'is_paid' => $is_paid,
             'deposit' => $deposit,
-            // 'customers_id' => $customerId,
             'customers_id' => $customerId ?? null,
             'fully_paid_date' => $is_paid ? now() : null
         ]);
 
         return response()->json(['error' => 'Description of the error'], 422);
     }
-
-    
 }

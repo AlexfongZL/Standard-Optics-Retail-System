@@ -9,6 +9,7 @@
             <span class="input-group-text" id="basic-addon1">Customer Name</span>
             <input autocomplete="off" type="text" id="customer_name" class="form-control capitalize" placeholder="Example: Ali bin Abu" name="name" aria-describedby="basic-addon1" maxlength="255">
         </div>
+        <div class="input-group" id="warning-message" style="color: red;"></div>
 
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">IC/Passport No.</span>
@@ -68,8 +69,15 @@
     $('#submitButton').click(function(event) {
             // Prevent the default form submission
             event.preventDefault();
+            const customerNameValue = document.getElementById('customer_name').value.trim();
 
-            var new_customer_data = {
+            if (customerNameValue === ''){
+                event.preventDefault();
+                document.getElementById('customer_name').classList.add('input-error');                
+                document.getElementById('warning-message').textContent = '*Please Insert Customer Name';
+                
+            }else{
+                var new_customer_data = {
                     name: customer_name.value,
                     ic_passport_num: ic_passport_num.value,
                     telephone_num: telephone_num.value,
@@ -107,6 +115,7 @@
                 .catch(error => {
                     console.error('There was a problem with the fetch operation:', error.message);
                 });
+            }
             
         });
 

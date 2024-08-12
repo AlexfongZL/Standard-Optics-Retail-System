@@ -42,8 +42,14 @@
         <button id="saveButton" style="display: none;" class="btn btn-success" type="submit">Save</button>
     </div>
     
-</form>
-<p></p>
+</form><p></p>
+
+<form method="POST" action="{{ route('customer.delete_customer', ['customers_id' => $customer->id]) }}">
+    @csrf
+    @method('post')
+    <button class="delButton btn btn-danger" type="submit">🗑 Delete This Customer</button>
+</form><p></p>
+
 <div class="container text-center border border-primary p-2">
     <div class="row align-items-start">
         <div class="col">
@@ -108,7 +114,11 @@
                     @foreach($sales as $key => $sale)
                     <tr class="{{$key == 0 ? 'table-warning' : '' }}">   
                             <td>{{$sale->created_at->format('d-m-Y')}}</td>    
-                            <td>{{$sale->description}}</td>
+                            <!-- <td>{{$sale->description}}</td> -->
+                            <td><a href="{{route('sale.detail', ['id' => $sale->id])}}">
+                                    {{ $sale->description }}
+                                </a>
+                            </td>
                             <td >{{$sale->price}}</td>
                             <td >
                                 @if($sale->is_paid)
@@ -160,7 +170,6 @@
     }
 
     // to fetch all customer degree and refresh the vision history table
-    // function fetchAllDegrees(id){
     function fetchAllDegrees(){
 
         fetch('{{ route('customer.fetch_all_degree') }}', {
@@ -229,6 +238,7 @@
                 var to_be_deleted_data = {
                     customers_id: {{ $customer->id }},
                     id: id,
+                    fromAJAX: true,// currently only used in delete_sale function in SaleController
                 };
                 console.log('To be deleted data: ',to_be_deleted_data);
 
@@ -365,14 +375,15 @@
         });
     }
 
+    // function to capitalize all input
     function capitalize(){
         document.querySelectorAll('.capitalize').forEach(input => {
-        // Add an event listener for the 'input' event
-        input.addEventListener('input', function() {
-            // Capitalize the input value
-            this.value = this.value.toUpperCase();
+            // Add an event listener for the 'input' event
+            input.addEventListener('input', function() {
+                // Capitalize the input value
+                this.value = this.value.toUpperCase();
+            });
         });
-    });
     }
 
     // END

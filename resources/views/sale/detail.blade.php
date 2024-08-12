@@ -15,28 +15,42 @@
 @endif
 <div id="saleData" data-customer-id="{{ $sale_details->id }}"></div>
 
-<form method="POST" action="{{ route('customer.update', ['id' => $sale_details->id]) }}">
+<form method="POST" action="{{ route('sale.update_sale', ['sales_id' => $sale_details->id]) }}">
     @csrf
     @method('post')
     <div class="input-group mb-1">
         <span class="input-group-text" id="basic-addon1">{{__('txt.customer.name')}}:</span>
-        <input type="text" class="form-control" name="name" aria-describedby="basic-addon1" value="{{ $sale_details->customer_details->name ?? '' }}" maxlength="255" disabled>
 
-        <span class="input-group-text" id="basic-addon1">{{__('txt.sale.description')}}:</span>
-        <input type="text" class="form-control" name="address" aria-describedby="basic-addon1" value="{{ $sale_details->description ?? '' }}" maxlength="255">
-    </div>
+            @if($sale_details->customer_details)
+                <a class="form-control" 
+                href="{{ route('customer.detail', ['id' => $sale_details->customer_details->id]) }}" 
+                style="color: #007bff; text-decoration: underline; cursor: pointer;">
+                    {{ $sale_details->customer_details->name ?? '**Not Available' }}
+                </a>
+            @else
+                <input type="text" class="form-control" aria-describedby="basic-addon1" value="**Not Available" disabled>
+            @endif
 
-    <div class="input-group mb-1">
         <span class="input-group-text" id="basic-addon1">{{__('txt.customer.telephone')}}:</span>
         <input type="text" class="form-control" name="telephone_num" aria-describedby="basic-addon1" value="{{ $sale_details->customer_details->telephone_num ?? '' }}" maxlength="30" disabled>
+    </div>
+    <p></p><p></p><p></p>
+    <div class="input-group mb-1">
+        <span class="input-group-text" id="basic-addon1">{{__('txt.sale.description')}}:</span>
+        <input type="text" class="form-control capitalize" name="sale_description" aria-describedby="basic-addon1" value="{{ $sale_details->description ?? '' }}" maxlength="255">
     </div>
 
     <div class="d-grid ">
         <button id="saveButton" style="display: none;" class="btn btn-success" type="submit">Save</button>
     </div>
-</form>
+</form><p></p>
 
-<p></p>
+<form method="POST" action="{{ route('sale.delete_sale', ['id' => $sale_details->id]) }}">
+    @csrf
+    @method('post')
+    <input type="hidden" name="fromAJAX" value="{{ false }}">
+    <button class="delButton btn btn-danger" type="submit">🗑 Delete This Sale</button>
+</form><p></p>
 
 <div class="container text-center border border-primary p-2">
     <div class="row align-items-start">
@@ -175,7 +189,7 @@
         }
     }
 
-    // to fetch all customer degree and refresh the vision history table
+    // to fetch all installment
     function fetchAllInstallment(){
         fetch('{{ route('installment.fetch_all_installment') }}', {
             method: 'POST',
@@ -284,6 +298,7 @@
         });
     }
 
+    // function to add edit button event listener to Full Price, Deposit, Installment.
     function addEditEventListenerToButton(){
         document.querySelectorAll('.editButton').forEach(button => {
             button.addEventListener('click', function() {
@@ -297,8 +312,6 @@
                     sales_id: {{ $sale_details->id }},
                     installment_id: id ? id : null, // installment id
                 };
-
-                // console.log('to_be_editted_installment',to_be_editted_installment);
         
                 // Get the installment payment cells
                 var paymentCell = row.querySelector('.payments');
@@ -334,10 +347,10 @@
                 // when save edit button clicked
                 row.querySelector('.saveButton').addEventListener('click', function(){
                     if(to_be_editted_installment.installment_id !== null){
-                        updateInstallment(to_be_editted_installment, true);
+                        paymentUpdate(to_be_editted_installment, true);
                     }
                     if(to_be_editted_installment.installment_id === null){
-                        updateInstallment(to_be_editted_installment, false);
+                        paymentUpdate(to_be_editted_installment, false);
                     }
                 });
 
@@ -355,7 +368,8 @@
         });
     }
 
-    function updateInstallment(to_be_editted_installment,isUpdateInstallment){
+    // function to edit payment (Full Price, Deposit, Installment)
+    function paymentUpdate(to_be_editted_installment,isUpdateInstallment){
         var data = {
             installment_id: to_be_editted_installment.installment_id,
             sales_id : to_be_editted_installment.sales_id,
@@ -365,10 +379,7 @@
             new_installment_value: document.getElementById('newInstallmentValue') ? document.getElementById('newInstallmentValue').value.trim().replace(/[()]/g, "") : null,
         }
 
-        // console.log('data: ',data );
-
         if(isUpdateInstallment){
-            // console.log('To be updated installment data: ',data );
             fetch('{{ route('installment.update_installment') }}', {
                 method: 'POST',
                 body: JSON.stringify(data), // Convert data to JSON
@@ -382,8 +393,6 @@
                 return response.json();
             })
             .then(data =>{
-                // console.log(JSON.stringify(data));
-                // fetchAllInstallment();
                 window.location.reload();
             })
             .catch(error => {
@@ -417,6 +426,7 @@
         
     }
 
+    // function to calculate remaining amount to be paid
     function calculateRemaining() {
         // const installmentPayments = document.querySelectorAll('.payments');
         const installmentPayments = document.querySelectorAll('.payments:not(.exclude)');
@@ -442,11 +452,30 @@
         }
     }
 
+    // function to make amount not less than RM 1.00
     function preventDelete(event) {
         if(event.key === 'Backspace' || event.key === 'Delete') {
             event.preventDefault(); // Prevent default behavior (deleting the digit)
             event.target.value = '1.00'; // Set input value to 0
         }
+    }
+
+    // auto capitalize all the alphabet input
+    function capitalize(){
+        document.querySelectorAll('.capitalize').forEach(input => {
+            // Add an event listener for the 'input' event
+            input.addEventListener('input', function() {
+                // Capitalize the input value
+                this.value = this.value.toUpperCase();
+            });
+        });
+    }
+
+    // Function to check if any input has changed
+    function checkChanges() {
+        // Show the save button if there are changes in any input or textarea
+        const hasChanges = Array.from(inputs).some(input => input.value.trim() !== '') || textarea.value.trim() !== '';
+        saveButton.style.display = hasChanges ? 'block' : 'none';
     }
 
     // END
@@ -486,41 +515,14 @@
 // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
     const addButton = document.getElementById('addPaymentButton');
+    const inputs = document.querySelectorAll('input[type="text"]');
 
+    capitalize();
     addEditEventListenerToButton();
     addDeleteEventListenerToButton();
     calculateRemaining();
+    inputs.forEach(input => input.addEventListener('input', checkChanges));
 
-// END
-// #############################################################################################################################
-//            ▒▒▒▒▒▒▒▒
-//          ▒▒▒      ▒▒▒
-//         ▒▒   ▒▒▒▒  ▒░▒
-//        ▒▒   ▒▒  ▒▒  ▒░▒
-//       ▒▒░▒      ▒▒  ▒░▒
-//        ▒▒░▒     ▒▒  ▒░▒
-//          ▒▒▒▒▒▒▒   ▒▒
-//                  ▒▒▒
-//      ▒▒▒▒        ▒▒
-//    ▒▒▒░░▒▒▒     ▒▒  ▓▓▓▓▓▓▓▓
-//   ▒▒     ▒▒▒    ▒▒▓▓▓▓▓░░░░░▓▓  ▓▓▓▓
-//  ▒   ▒▒    ▒▒ ▓▓▒░░░░░░░░░█▓▒▓▓▓▓░░▓▓▓
-// ▒▒  ▒ ▒▒   ▓▒▒░░▒░░░░░████▓▓▒▒▓░░░░░░▓▓
-// ░▒▒   ▒  ▓▓▓░▒░░░░░░█████▓▓▒▒▒▒▓▓▓▓▓░░▓▓
-//   ▒▒▒▒  ▓▓░░░░░░███████▓▓▓▒▒▒▒▒▓   ▓▓░▓▓
-//       ▓▓░░░░░░███████▓▓▓▒▒▒▒▒▒▒▓   ▓░░▓▓
-//      ▓▓░░░░░███████▓▓▓▒▒▒▒▒▒▒▒▒▓▓▓▓░░▓▓
-//     ▓▓░░░░██████▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▓░░░░▓▓
-//     ▓▓▓░████▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓
-//      ▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓
-//      ▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓
-//       ▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓
-//        ▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓
-//          ▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓
-//            ▓▓▓▓▓▓▒▒▒▒▒▓▓▓▓
-//               ▓▓▓▓▓▓▓▓
-// #############################################################################################################################
-    
     // Add event listener to the addPaymentButton
     document.getElementById('addPaymentButton').addEventListener('click', function() {
         // const customerId = document.getElementById('customerData').dataset.customerId;

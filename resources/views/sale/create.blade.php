@@ -30,7 +30,6 @@
             <span class="input-group-text" id="basic-addon1">Customer Name</span>
             <input autocomplete="off" type="text" id="customer_name" class="customer-details form-control capitalize" name="name" aria-describedby="basic-addon1" maxlength="255">            
         </div>
-
         <div class="input-group" id="warning-message" style="color: red;"></div>
         
         <div id="search-results" class="position-absolute w-50 border border-secondary bg-white" style="z-index: 1000; display: none; left: 18.55%;";></div>
@@ -400,28 +399,27 @@
         });
 
         // submit the information
-        $('#submitButton').click(function(event) {
+        $('#submitButton').click(function(event) { 
             // Prevent the default form submission
             event.preventDefault();
 
             var checkbox = document.getElementById('flexSwitchCheckChecked');
+            const customerNameValue = document.getElementById('customer_name').value.trim();
+            const saleDescriptionValue = document.getElementById('sale_description').value.trim();
 
+            // if customer detail checkbox is checked
             if (checkbox.checked){
-                if (!document.getElementById('customer_name').value){
+                if (customerNameValue === ''){
                     event.preventDefault();
-
                     document.getElementById('customer_name').classList.add('input-error');
-                    
                     document.getElementById('warning-message').textContent = '*Please insert customer name';
-                }
-                else if(!document.getElementById('sale_description').value){
-                    event.preventDefault();
 
+                }else if (saleDescriptionValue === ''){
+                    event.preventDefault();
                     document.getElementById('sale_description').classList.add('input-error');
-                    
                     document.getElementById('warning-message-sale-description').textContent = '*Please insert sale description';
-                }
-                else{
+                
+                }else{
                     var new_sale_data = {
                         // customer data
                         checkbox: true,
@@ -463,7 +461,13 @@
                     });
                 }
             }else{
-                var new_sale_data = {
+                if (saleDescriptionValue === ''){
+                    event.preventDefault();
+                    document.getElementById('sale_description').classList.add('input-error');                    
+                    document.getElementById('warning-message-sale-description').textContent = '*Please insert sale description';
+                
+                }else{
+                    var new_sale_data = {
                         // customer data
                         checkbox: false,
                         customerId: checkbox.checked ? customerId : null,
@@ -498,19 +502,11 @@
                     .then(data =>{
                         window.location.href = '/sale/list';
                         console.log(data);
-                        // if (data.error) {
-                        //     // Show the error message to the user
-                        //     alert('An error occurred: ' + data.error);
-                        // } else {
-                        //     // Process the successful response
-                        //     console.log(data);
-                        //     // Redirect to another page if needed
-                        //     // window.location.href = '/sale/list';
-                        // }
                     })
                     .catch(error => {
                         console.error('There was a problem with the fetch operation:', error.message);
                     });
+                }
             }
             
         });

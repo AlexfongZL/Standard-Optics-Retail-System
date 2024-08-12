@@ -65,9 +65,9 @@ Route::get('/customer/detail/{id}',[
 //     CustomerController::class, 'detail'
 // ])->name('customer.detail');
 
-// Route::post('/customer/search', [
-//     CustomerController::class, 'search'
-// ])->name('customer.search');
+Route::post('/customer/delete_customer', [
+    CustomerController::class, 'delete_customer'
+])->name('customer.delete_customer');
 
 Route::match(['get', 'post'], 'customer/search', [
     CustomerController::class, 'search'
