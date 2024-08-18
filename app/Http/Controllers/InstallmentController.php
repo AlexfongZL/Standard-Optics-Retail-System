@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 
 class InstallmentController extends Controller
@@ -46,9 +47,20 @@ class InstallmentController extends Controller
 
     // update installment, CR "U" D
     public function update_installment(Request $request){
+        $timestamp = strtotime($request->input('new_installment_date'));
+
+        // Check if the conversion was successful
+        if ($timestamp === false) {
+            return response()->json(['error' => 'Invalid date format.'], 400);
+        }
+
+        // Replace the original date string with the timestamp in the request data
+        $request->merge(['new_installment_date' => $timestamp]);
+
         $validator = Validator::make($request->all(), [
             'sales_id' => 'required|exists:sales,id',
             'installment_id' => 'required|exists:installments,id',
+            'new_installment_date' => 'nullable|integer|between:0,2147483647',
         ]);
 
         if ($validator->fails()) {
@@ -63,17 +75,23 @@ class InstallmentController extends Controller
 
             $installmentUpdate->update([
                 'payment_amount' => $request->input('new_installment_value'),
+                'created_at' => $request->input('new_installment_date'),
+                'updated_at' => $request->input('new_installment_date'),
             ]);
 
             $this->update_is_paid_status($request->input('sales_id'));
 
             // Return success response
             return response()->json([
-                'message' => 'Installment updated successfully',
+                'message' => 'Installment updated successfully. 分期付款更新成功。',
+                'status' => 'success',
             ]);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update installment'], 500);
+            return response()->json([
+                'error' => 'Failed to update installment. 更新分期付款失败。',
+                'status' => 'failure',
+            ], 500);
         }
     }
 
@@ -137,9 +155,16 @@ class InstallmentController extends Controller
 
     // to add new installment into a particular sale "C" RUD
     public function add_new_installment(Request $request){
-        $validator = Validator::make($request->all(), [
+        $installment_date = strtotime($request->input('installment_date'));
+
+        $validator = Validator::make([
+            'sales_id' => $request->input('sales_id'),
+            'payment_amount' => $request->input('payment_amount'),
+            'installment_date' => $installment_date,
+        ], [
             'sales_id' => 'required|exists:sales,id',
             'payment_amount' => 'required|numeric|between:0,99999',
+            'installment_date' => 'required|integer|between:0,2147483647',
         ]);
 
         // Check if the validation fails
@@ -147,26 +172,43 @@ class InstallmentController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $installment_dateCarbon = Carbon::createFromTimestamp($installment_date);
+
         try{
-            // create/pay new installment
-            Installments::create([
-                'sales_id' => $request->input('sales_id'),
-                'payment_amount' => $request->input('payment_amount', 0.0),
-            ]);
+            $sale_is_paid_status = Sales::where('id', $request->input('sales_id'))->value('is_paid');
 
-            $this->update_is_paid_status($request->input('sales_id'));
+            // if the sale is not fully paid, only then can update installment
+            if(!$sale_is_paid_status){
+                // create/pay new installment
+                $installment = Installments::create([
+                    'sales_id' => $request->input('sales_id'),
+                    'payment_amount' => $request->input('payment_amount', 0.0),
+                ]);
 
-            return response()->json([
-                'message' => 'Data saved successfully',
-                // 'id' => $request->input('id'),
-                // 'payment_amount' => $request->input('payment_amount'),
-            ]);
+                $installment->created_at = $installment_dateCarbon;
+                $installment->updated_at = $installment_dateCarbon;
+                $installment->save();
+
+                $this->update_is_paid_status($request->input('sales_id'));
+
+                return response()->json([
+                    'message' => 'New installment saved successfully. 新分期付款已成功保存。',
+                    'status' => 'success',
+                ]);
+            }else{
+                return response()->json([
+                    'message' => 'The sale has been fully paid, unable to add any installment. 销售款项已全额支付，无法添加任何分期付款。',
+                    'status' => 'failure',
+                ]);
+            }
+
         } catch (\Exception $e) {
             // Return error message if something went wrong
             return response()->json(['message' => 'Failed to save data'], 500);
         }       
     }
 
+    // function to update is_paid_status in installment table
     private function update_is_paid_status(int $saleId): void{
         try {
             // Retrieve sale details, ensuring necessary fields are present
@@ -192,5 +234,4 @@ class InstallmentController extends Controller
             echo 'Error updating is_paid status: ' . $e->getMessage();
         }
     }
-
 }

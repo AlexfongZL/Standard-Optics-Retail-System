@@ -83,10 +83,9 @@ return [
     ],
 
     'sale' => [
-        'name' => 'Name',
+        'name' => 'Customer Name',
         'description' => 'Sale Description',
         'price' => 'Price (RM)',
-        'is_paid' => 'Payment Status',
         'deposit' => 'Deposit (RM)',
         'paid_installment' => 'Paid Installment (RM)',
         'remaining' => 'Remaining (RM)',

@@ -14,26 +14,6 @@
         <div class="col-md-4 ">
                 {{ $sales->onEachSide(1)->appends(request()->query())->links() }}
         </div>
-
-        <!-- <div class="col-md-3 offset-md-1">
-            <form action="" method="post">
-            @csrf
-            @method('post')
-                <div class="input-group">
-                    <input type="text" class="form-control" id="search-input" placeholder="Search Customer Name" name="query">
-                    <div class="input-group-append" id="clear-search-button" style="display: none;">
-                        <button class="btn btn-outline-secondary" type="button" id="clear-search-input">
-                            x
-                        </button>
-                    </div>
-                    
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="submit">🔍</button>
-                    </div>
-                </div>
-                <div id="search-results" class="position-absolute w-50 border border-secondary bg-white" style="z-index: 1000; display: none";></div>
-            </form>
-        </div> -->
     </div>
 </div>
 
@@ -43,7 +23,7 @@
         <th scope="col">{{__('txt.sale.name')}}</th>
         <th scope="col">{{__('txt.sale.description')}}</th>
         <th scope="col">{{__('txt.sale.price')}}</th>
-        <th scope="col">{{__('txt.sale.is_paid')}}</th>
+        <th><span class="badge bg-warning text-dark ms-2 fs-6">Payment</span> Status</th>
         <th scope="col">{{__('txt.sale.created_at')}}</th>
         </tr>
     </thead>
@@ -64,27 +44,19 @@
                 <td>{{$sale->price}}</td>
                 <td>
                     @if($sale->is_paid)
-                        Paid
+                        <span class="badge bg-success ms-2">Fully Paid</span>
                     @else
-                        Not Paid
+                        <span class="badge bg-danger ms-2">Not Fully Paid</span>
                     @endif
                 </td>
-                <td>{{$sale->created_at->format('d/m/Y')}}</td>
-                <!-- <td>
-                    <ul class="nav nav-pills">
-                        <li class="nav-item">
-                            <a class="nav-link" aria-current="page" href="{{route('sale.detail', ['id' => $sale->id])}}">🔍</a>
-                        </li>
-                    </ul>
-                </td> -->
+                <td>{{$sale->created_at->format('d-m-Y')}}</td>
             </tr>
         @endforeach
     </tbody>
 </table>
 
 <script>
-    $(document).ready(function()
-    {
+    $(document).ready(function(){
         // Function to auto fetch suggestions --> WHEN USER ENTER TEXT INTO SEARCH BOX <--
         function fetchSuggestions(query) {
             $.ajax({

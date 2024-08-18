@@ -7,12 +7,18 @@
         {{ session('success') }}
     </div>
 @endif
-
+    <div class="alert alert-success" role="alert" style="display: none;">
+        {{ session('success') }}
+    </div>
 @if(session('error'))
     <div class="alert alert-danger" role="alert" id="errorAlert">
         {{ session('error') }}
     </div>
 @endif
+    <div class="alert alert-danger" role="alert" id="errorAlert" style="display: none;">
+        {{ session('error') }}
+    </div>
+
 <div id="saleData" data-customer-id="{{ $sale_details->id }}"></div>
 
 <form method="POST" action="{{ route('sale.update_sale', ['sales_id' => $sale_details->id]) }}">
@@ -75,7 +81,7 @@
                 <tbody>
                     <!-- full price -->
                     <tr class="sale-price">
-                        <td>{{ $sale_details->created_at->format('d-m-Y') }}</td>
+                        <td id="sale-date">{{ $sale_details->created_at->format('d-m-Y') }}</td>
                         <td>{{__('txt.sale.details.price')}}</td>
                         <td class="payments exclude" id="sale-price" style="text-align: right;">{{ $sale_details->price }}</td>
                         <td>
@@ -96,7 +102,7 @@
                     <!-- deposit -->
                     <!-- <tr style="border-bottom: 1px solid black;"> -->
                     <tr class="sale-deposit">
-                        <td>{{ $sale_details->created_at->format('d-m-Y') }}</td>
+                        <td></td>
                         <td>{{__('txt.sale.details.deposit')}}</td>
                         <td class="payments exclude" id="sale-deposit" style="text-align: right;">({{ $sale_details->deposit }})</td>
                         <td>
@@ -130,7 +136,7 @@
                 <tbody id="installmentRows">
                         @foreach ($installments as $installment)
                         <tr class="sale-installment">
-                            <td>{{$installment->created_at->format('d-m-Y')}}</td>
+                            <td id="installment-date">{{$installment->created_at->format('d-m-Y')}}</td>
                             <td>{{__('txt.sale.details.installment')}}</td> 
                             <td class="payments" style="text-align: right;">({{$installment->payment_amount}})</td>
                             <td>
@@ -155,7 +161,13 @@
                         <tr>
                             <th colspan="2">{{__('txt.sale.details.remaining')}} (RM)</th>
                             <th style="text-decoration: underline; text-align: right;" id="remaining-payment"></th>
-                            <th colspan="2"></td>
+                            <th colspan="2">
+                                @if($sale_details->is_paid)
+                                    <span class="badge bg-success ms-2">Fully Paid</span>
+                                @else
+                                    <span class="badge bg-danger ms-2">Not Fully Paid</span>
+                                @endif
+                            </td>
                         </tr>
                 </tbody>
             </table>
@@ -164,13 +176,13 @@
 </div>
 
 <script>
-// #############################################################################################################################
-//  _____       _     _ _        ______                _   _                 
-// |  __ \     | |   | (_)      |  ____|              | | (_)                
-// | |__) |   _| |__ | |_  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
-// |  ___/ | | | '_ \| | |/ __| |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
-// | |   | |_| | |_) | | | (__  | |  | |_| | | | | (__| |_| | (_) | | | \__ \
-// |_|    \__,_|_.__/|_|_|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+    // #############################################################################################################################
+    //  _____       _     _ _        ______                _   _                 
+    // |  __ \     | |   | (_)      |  ____|              | | (_)                
+    // | |__) |   _| |__ | |_  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __  ___ 
+    // |  ___/ | | | '_ \| | |/ __| |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+    // | |   | |_| | |_) | | | (__  | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+    // |_|    \__,_|_.__/|_|_|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
 
     // function to format date into dd-mm-yyyy (eg. 15-02-2024)
     function formatDate(dateString) {
@@ -190,75 +202,75 @@
     }
 
     // to fetch all installment
-    function fetchAllInstallment(){
-        fetch('{{ route('installment.fetch_all_installment') }}', {
-            method: 'POST',
-            body: JSON.stringify({ sales_id: {{ $sale_details->id }} }),
-            headers: { 
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                'Content-Type': 'application/json' }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Construct the HTML content for the tbody with the updated data
-            var bodyContent = '';
-            data.forEach(item => {
-                for (var i = 0; i < item.length; i++) {
-                    bodyContent += `
-                    <tr class="sale-installment">
-                        <td>${formatDate(item[i].created_at)}</td>
-                        <td>{{__('txt.sale.details.installment')}}</td>
-                        <td class="payments" style="text-align: right;">(${item[i].payment_amount})</td>
-                        <td>
-                            <button class="editButton btn btn-warning" data-id="${item[i].id}">
-                                ✏️
-                            </button>
-                            <button class="saveButton btn btn-success" style="display: none;fontWeight: bold;">
-                                Save
-                            </button>
-                        </td>
-                        <td>
-                            <button class="deleteButton btn btn-danger" data-id="${item[i].id}" style="fontWeight: bold;">
-                                X
-                            </button>
-                            <button class="cancelButton btn btn-danger" style="display: none;">
-                                Cancel
-                            </button>
-                        </td>
-                    </tr>`;
-                }
-            });
-            document.getElementById('installmentRows').innerHTML = bodyContent;
+    // function fetchAllInstallment(){
+    //     fetch('{{ route('installment.fetch_all_installment') }}', {
+    //         method: 'POST',
+    //         body: JSON.stringify({ sales_id: {{ $sale_details->id }} }),
+    //         headers: { 
+    //             'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+    //             'Content-Type': 'application/json' }
+    //     })
+    //     .then(response => {
+    //         if (!response.ok) {
+    //             throw new Error('Network response was not ok');
+    //         }
+    //         return response.json();
+    //     })
+    //     .then(data => {
+    //         // Construct the HTML content for the tbody with the updated data
+    //         var bodyContent = '';
+    //         data.forEach(item => {
+    //             for (var i = 0; i < item.length; i++) {
+    //                 bodyContent += `
+    //                 <tr class="sale-installment">
+    //                     <td>${formatDate(item[i].created_at)}</td>
+    //                     <td>{{__('txt.sale.details.installment')}}</td>
+    //                     <td class="payments" style="text-align: right;">(${item[i].payment_amount})</td>
+    //                     <td>
+    //                         <button class="editButton btn btn-warning" data-id="${item[i].id}">
+    //                             ✏️
+    //                         </button>
+    //                         <button class="saveButton btn btn-success" style="display: none;fontWeight: bold;">
+    //                             Save
+    //                         </button>
+    //                     </td>
+    //                     <td>
+    //                         <button class="deleteButton btn btn-danger" data-id="${item[i].id}" style="fontWeight: bold;">
+    //                             X
+    //                         </button>
+    //                         <button class="cancelButton btn btn-danger" style="display: none;">
+    //                             Cancel
+    //                         </button>
+    //                     </td>
+    //                 </tr>`;
+    //             }
+    //         });
+    //         document.getElementById('installmentRows').innerHTML = bodyContent;
             
-            remainingBodyContent = `<tr>
-                                        <th colspan="2">{{__('txt.sale.details.remaining')}} (RM)</th>
-                                        <th style="text-decoration: underline; text-align: right;" id="remaining-payment"></th>
-                                    </tr>`;
+    //         remainingBodyContent = `<tr>
+    //                                     <th colspan="2">{{__('txt.sale.details.remaining')}} (RM)</th>
+    //                                     <th style="text-decoration: underline; text-align: right;" id="remaining-payment"></th>
+    //                                 </tr>`;
 
-            const remainingRow = document.createElement('tr');
-            remainingRow.innerHTML = remainingBodyContent;
-            const installmentRowsElement = document.getElementById('installmentRows');
+    //         const remainingRow = document.createElement('tr');
+    //         remainingRow.innerHTML = remainingBodyContent;
+    //         const installmentRowsElement = document.getElementById('installmentRows');
 
-            installmentRowsElement.appendChild(remainingRow);
+    //         installmentRowsElement.appendChild(remainingRow);
 
-            addButton.disabled = false;
+    //         addButton.disabled = false;
 
-            // calculate remaining, add event listener to delete and edit button
-            calculateRemaining();
-            addDeleteEventListenerToButton();
-            addEditEventListenerToButton();
+    //         // calculate remaining, add event listener to delete and edit button
+    //         calculateRemaining();
+    //         addDeleteEventListenerToButton();
+    //         addEditEventListenerToButton();
 
-            // console.log('All installments data: ', data);
-        })
-        .catch(error => {
-            console.error('Error fetching installments:', error);
-        });
-    }
+    //         // console.log('All installments data: ', data);
+    //     })
+    //     .catch(error => {
+    //         console.error('Error fetching installments:', error);
+    //     });
+    // }
 
     // this function is called after javascript render a new tbody during the runtime
     function addDeleteEventListenerToButton(){
@@ -287,8 +299,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    // console.log(JSON.stringify(data));
-                    // fetchAllInstallment();
                     window.location.reload();
                 })
                 .catch(error => {
@@ -314,22 +324,45 @@
                 };
         
                 // Get the installment payment cells
+                // var paymentCell = row.querySelector('.payments');
+
+                // Get the payment cells
                 var paymentCell = row.querySelector('.payments');
-                
+
                 // Get the current values
                 var value = paymentCell.textContent.trim().replace(/[()]/g, "");
-                console.log('value: ',value);
 
-                // Replace the cells with input fields
                 if(row.classList.contains('sale-price')){
+                    var dateCell = row.querySelector('#sale-date');
+                    var dateValue = dateCell.textContent;
+
+                    dateCell.innerHTML = `<input type="text" class="form-control" id="newSaleDate" name="newSaleDate" autocomplete="off" value="${dateValue}">`;
+
                     paymentCell.innerHTML = `<input class="form-control" style="text-align: right;" id="newPriceValue" type="number" value="${value}" maxlength="255" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">`;
+                    
+                    $('#newSaleDate').datepicker({
+                        format: 'dd-mm-yyyy', // Date format
+                        autoclose: true,
+                        todayHighlight: true
+                    });
                 }
                 if(row.classList.contains('sale-deposit')){
                     paymentCell.innerHTML = `<input class="form-control" style="text-align: right;" id="newDepositValue" type="number" value="${value}" maxlength="255" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">`;
                 }
                 if(row.classList.contains('sale-installment')){
+                    var dateCell = row.querySelector('#installment-date');
+                    var dateValue = dateCell.textContent;
+
+                    dateCell.innerHTML = `<input type="text" class="form-control" id="newInstallmentDate" name="newInstallmentDate" autocomplete="off" value="${dateValue}">`;
+
                     paymentCell.innerHTML = `<input class="form-control" style="text-align: right;" id="newInstallmentValue" type="number" value="${value}" maxlength="255" step="0.01" pattern="\d+(\.\d{1,2})?" oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid number with up to two decimal places')" onchange="this.value = parseFloat(this.value).toFixed(2)" value="1.00" onkeydown="preventDelete(event)">`;
-                }
+                    
+                    $('#newInstallmentDate').datepicker({
+                        format: 'dd-mm-yyyy', // Date format
+                        autoclose: true,
+                        todayHighlight: true
+                    });
+                }                
                 
                 // hide the edit and delete button
                 button.style.display = 'none';
@@ -356,26 +389,24 @@
 
                 // when cancel button clicked
                 row.querySelector('.cancelButton').addEventListener('click', function(){
-                    if(to_be_editted_installment.installment_id !== null){
-                        // fetchAllInstallment();
-                        window.location.reload();
-                    }
-                    if(to_be_editted_installment.installment_id === null){
-                        window.location.reload();
-                    }
+                    window.location.reload();
                 });
             });
         });
     }
 
-    // function to edit payment (Full Price, Deposit, Installment)
+    // function to edit payment (Full Price & date, Deposit, Installment & date)
     function paymentUpdate(to_be_editted_installment,isUpdateInstallment){
         var data = {
             installment_id: to_be_editted_installment.installment_id,
             sales_id : to_be_editted_installment.sales_id,
+            
+            new_sale_date: document.getElementById('newSaleDate') ? document.getElementById('newSaleDate').value : null,
             new_price_value: document.getElementById('newPriceValue') ? document.getElementById('newPriceValue').value.trim().replace(/[()]/g, "") : null,
+            
             new_deposit_value: document.getElementById('newDepositValue') ? document.getElementById('newDepositValue').value.trim().replace(/[()]/g, "") : null,
-            // new_installment_value: document.getElementById('newInstallmentValue').value.trim().replace(/[()]/g, ""),
+            
+            new_installment_date: document.getElementById('newInstallmentDate') ? document.getElementById('newInstallmentDate').value : null,
             new_installment_value: document.getElementById('newInstallmentValue') ? document.getElementById('newInstallmentValue').value.trim().replace(/[()]/g, "") : null,
         }
 
@@ -392,7 +423,12 @@
                 }
                 return response.json();
             })
-            .then(data =>{
+            .then(data =>{                
+                const formattedMessage = data.message.replace(/\n/g, '<br>');
+                localStorage.setItem('flashMessage', formattedMessage);
+                localStorage.setItem('flashStatus', data.status);
+
+                // Reload the page
                 window.location.reload();
             })
             .catch(error => {
@@ -401,7 +437,7 @@
         }
 
         if(!isUpdateInstallment){
-            // update sales's price or deposit
+            // update sales's price or deposit only
             fetch('{{ route('sale.update_sale') }}', {
                 method: 'POST',
                 body: JSON.stringify(data), // Convert data to JSON
@@ -414,9 +450,12 @@
                 }
                 return response.json();
             })
-            .then(data =>{
-                console.log(JSON.stringify(data));
-                // fetchAllInstallment();
+            .then(data =>{                
+                const formattedMessage = data.message.replace(/\n/g, '<br>');
+                localStorage.setItem('flashMessage', formattedMessage);
+                localStorage.setItem('flashStatus', data.status);
+
+                // Reload the page
                 window.location.reload();
             })
             .catch(error => {
@@ -438,6 +477,7 @@
 
         let totalAmount = 0;
         let remainingAmount = 0;
+        let nilRemainingAmount = 0;
 
         for (const paymentElement of installmentPayments) {
             const amount = parseFloat(paymentElement.textContent.replace(/[()]/g, '')); // Remove parentheses and convert to number
@@ -446,9 +486,12 @@
 
         remainingAmount = priceValue - depositValue - totalAmount;
 
-        const remainingAmountDisplay = document.getElementById('remaining-payment'); // Assuming you have an element with this ID
-        if (remainingAmountDisplay) {
-            remainingAmountDisplay.textContent = `${remainingAmount.toFixed(2)}`; // Display total with 2 decimal places
+        const remainingAmountDisplay = document.getElementById('remaining-payment');
+        
+        if(!{{ $sale_details->is_paid }}){
+            remainingAmountDisplay.textContent = `${remainingAmount.toFixed(2)}`;
+        }else{
+            remainingAmountDisplay.textContent = `${nilRemainingAmount.toFixed(2)}`;
         }
     }
 
@@ -479,40 +522,40 @@
     }
 
     // END
-// #############################################################################################################################
+    // #############################################################################################################################
 
-// ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░▒▒▒▒░░░▒▒▒▒░░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒░▒▒▒▒▒▒░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒░░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒░░░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒░░░░░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░▒░░░░░░░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒░▒▒▒░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒░░░░░▓▓
-// ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒░░░░░░▓▓
-// ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-// _______▒__________▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-// ______▒_______________▒▒▒▒▒▒▒▒
-// _____▒________________▒▒▒▒▒▒▒▒
-// ____▒___________▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-// ___▒
-// __▒______▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-// _▒______▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
-// ▒▒▒▒___▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
-// ▒▒▒▒__▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
-// ▒▒▒__▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-// ▒▒
+    // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░▒▒▒▒░░░▒▒▒▒░░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒░▒▒▒▒▒▒░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒░░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒░░░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒░░░░░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░▒░░░░░░░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒░▒▒▒░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒▒▒░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▒░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒░░░░░▓▓
+    // ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒░░░░░░▓▓
+    // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+    // _______▒__________▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+    // ______▒_______________▒▒▒▒▒▒▒▒
+    // _____▒________________▒▒▒▒▒▒▒▒
+    // ____▒___________▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+    // ___▒
+    // __▒______▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+    // _▒______▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
+    // ▒▒▒▒___▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
+    // ▒▒▒▒__▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓
+    // ▒▒▒__▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+    // ▒▒
 
 
-// ## THESE DECLARATIONS AND FUNCTIONS BELOW WILL BE LOADED WHEN REFRESH OR GO INTO THIS PAGE ##
-// ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+    // ## THESE DECLARATIONS AND FUNCTIONS BELOW WILL BE LOADED WHEN REFRESH OR GO INTO THIS PAGE ##
+    // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
     const addButton = document.getElementById('addPaymentButton');
     const inputs = document.querySelectorAll('input[type="text"]');
@@ -523,17 +566,21 @@
     calculateRemaining();
     inputs.forEach(input => input.addEventListener('input', checkChanges));
 
-    // Add event listener to the addPaymentButton
+    // Add event listener to the addPaymentButton (to add installment payment)
     document.getElementById('addPaymentButton').addEventListener('click', function() {
-        // const customerId = document.getElementById('customerData').dataset.customerId;
         document.getElementById('addPaymentButton').disabled = true; // Add disabled attribute to make the button unclickable
 
         // Create three input fields
         var dateInput = document.createElement('input');
+        dateInput.id = 'installment_date';
+        dateInput.name = 'installment_date';
         dateInput.type = 'text';
         dateInput.className = 'form-control text-center';
         dateInput.value = formatDate(new Date()); // Set value to today's date
-        dateInput.disabled = true; // Disable the input
+        dateInput.disabled = false; // Disable the input
+
+       
+        
 
         var installmentPaymentAmountInput = document.createElement('input'); // Create the input element
         installmentPaymentAmountInput.type = 'number'; // Use the 'number' type for decimals
@@ -572,7 +619,10 @@
                 // id: {{ $sale_details->id }},
                 sales_id: {{ $sale_details->id }},
                 payment_amount: payment_amount,
+                installment_date: installment_date.value,
             };
+            
+            console.log("Sent data: ",installment_new_payment);
 
             fetch('{{ route('installment.add_new_installment') }}', {
                 method: 'POST',
@@ -581,14 +631,16 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    console.log("Sent data: ",installment_new_payment);
-                    throw new Error('Network response was not okkkk: ',response.status);
+                    throw new Error('Network response was not okie dokie: ',response.status);
                 }
                 return response.json();
             })
             .then(data =>{
-                // console.log(JSON.stringify(data));
-                // fetchAllInstallment();
+                const formattedMessage = data.message.replace(/\n/g, '<br>');
+                localStorage.setItem('flashMessage', formattedMessage);
+                localStorage.setItem('flashStatus', data.status);
+
+                // Reload the page
                 window.location.reload();
             })
             .catch(error => {
@@ -649,35 +701,73 @@
 
         // Insert the new row before the first row
         document.getElementById('installmentRows').insertBefore(newRow, firstRow);
+
+         // Initialize the datepicker on the newly created input field
+         $('#installment_date').datepicker({
+            format: 'dd-mm-yyyy', // Date format
+            autoclose: true,
+            todayHighlight: true
+        });
         
     });
 
-    // END
-// #############################################################################################################################
 
-// ██████████████████████████
-// ▌════════════════════════▐
-// ▌══▄▄▓█████▓▄═════▄▄▓█▓▄═▐ 
-// ▌═▄▓▀▀▀██████▓▄═▄▓█████▓▌▐
-// ▌═══════▄▓███████████▓▀▀▓▐ 
-// ▌═══▄▓█████████▓████▓▄═══▐
-// ▌═▄▓████▓███▓█████████▓▄═▐ 
-// ▌▐▓██▓▓▀▀▓▓███████▓▓▀▓█▓▄▐
-// ▌▓▀▀════▄▓██▓██████▓▄═▀▓█▐
-// ▌══════▓██▓▀═██═▀▓██▓▄══▀▐
-// ▌═════▄███▀═▐█▌═══▀▓█▓▌══▐ 
-// ▌════▐▓██▓══██▌═════▓▓█══▐
-// ▌════▐▓█▓══▐██═══════▀▓▌═▐
-// ▌═════▓█▀══██▌════════▀══▐
-// ▌══════▀═══██▌═══════════▐ 
-// ▌═════════▐██▌═══════════▐
-// ▌═════════▐██════════════▐
-// ▌═════════███════════════▐
-// ▌═════════███════════════▐ 
-// ▌════════▐██▌════════════▐
-// ▌▓▓▓▓▓▓▓▓▐██▌▓▓▓▓▓▓▓▓▓▓▓▓▐
-// ▌▓▓▓▓▓▓▓▓▐██▌▓▓▓▓▓▓▓▓▓▓▓▓▐
-// ▌▓▓▓▓▓▄▄██████▄▄▄▓▓▓▓▓▓▓▓▐ 
-// ██████████████████████████
+    document.addEventListener('DOMContentLoaded', function () {
+        const flashMessage = localStorage.getItem('flashMessage');
+        const flashStatus = localStorage.getItem('flashStatus');
+        const banner = document.querySelector('.alert');
+
+        if (flashMessage && flashStatus) {
+            banner.textContent = flashMessage;
+
+            // Set the banner class based on success or failure
+            if (flashStatus === 'success') {
+                banner.classList.add('alert-success');
+            } else if (flashStatus === 'failure') {
+                banner.classList.add('alert-danger');
+            }
+
+            banner.style.display = 'block';
+
+            // Clear the message and status from local storage
+            localStorage.removeItem('flashMessage');
+            localStorage.removeItem('flashStatus');
+
+            // Optionally hide the banner after a delay
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 10000); // Adjust the delay as needed
+        }
+    });
+
+
+    // END
+    // #############################################################################################################################
+
+    // ██████████████████████████
+    // ▌════════════════════════▐
+    // ▌══▄▄▓█████▓▄═════▄▄▓█▓▄═▐ 
+    // ▌═▄▓▀▀▀██████▓▄═▄▓█████▓▌▐
+    // ▌═══════▄▓███████████▓▀▀▓▐ 
+    // ▌═══▄▓█████████▓████▓▄═══▐
+    // ▌═▄▓████▓███▓█████████▓▄═▐ 
+    // ▌▐▓██▓▓▀▀▓▓███████▓▓▀▓█▓▄▐
+    // ▌▓▀▀════▄▓██▓██████▓▄═▀▓█▐
+    // ▌══════▓██▓▀═██═▀▓██▓▄══▀▐
+    // ▌═════▄███▀═▐█▌═══▀▓█▓▌══▐ 
+    // ▌════▐▓██▓══██▌═════▓▓█══▐
+    // ▌════▐▓█▓══▐██═══════▀▓▌═▐
+    // ▌═════▓█▀══██▌════════▀══▐
+    // ▌══════▀═══██▌═══════════▐ 
+    // ▌═════════▐██▌═══════════▐
+    // ▌═════════▐██════════════▐
+    // ▌═════════███════════════▐
+    // ▌═════════███════════════▐ 
+    // ▌════════▐██▌════════════▐
+    // ▌▓▓▓▓▓▓▓▓▐██▌▓▓▓▓▓▓▓▓▓▓▓▓▐
+    // ▌▓▓▓▓▓▓▓▓▐██▌▓▓▓▓▓▓▓▓▓▓▓▓▐
+    // ▌▓▓▓▓▓▄▄██████▄▄▄▓▓▓▓▓▓▓▓▐ 
+    // ██████████████████████████
+
 </script>
 @endsection

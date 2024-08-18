@@ -39,18 +39,22 @@
                     <td>{{$sale->customer_name ?? '**not available'}}</td>
                 @endif
 
-                <td>{{$sale->description}}</td>
+                <th>
+                    <a href="{{route('sale.detail', ['id' => $sale->id])}}">
+                        {{ $sale->description }}
+                    </a>
+                </th>
                 <td>{{$sale->price}}</td>
                 <td>{{$sale->deposit}}</td>
                 <td>{{$sale->paid_installment}}</td>
                 <td>{{$sale->remaining}}</td>
-                <td>
+                <!-- <td>
                     <ul class="nav nav-pills">
                         <li class="nav-item">
                             <a class="nav-link" aria-current="page" href="{{route('sale.detail', ['id' => $sale->id])}}">🔍</a>
                         </li>
                     </ul>
-                </td>
+                </td> -->
             </tr>
         @endforeach
     </tbody>

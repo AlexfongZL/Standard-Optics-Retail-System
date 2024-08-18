@@ -15,6 +15,8 @@ class Sales extends Model
         'price',
         'is_paid',
         'deposit',
+        'created_at',
+        'updated_at',
         'fully_paid_date',
     ];
 }

@@ -12,5 +12,7 @@ class Installments extends Model
     protected $fillable =[
         'sales_id',
         'payment_amount',
+        'created_at',
+        'updated_at',
     ];
 }

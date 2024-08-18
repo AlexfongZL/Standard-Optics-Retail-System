@@ -79,6 +79,11 @@
 
 <form>
         <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Sale's Date</span>
+            <input type="text" class="form-control" id="sale_date" name="sale_date" autocomplete="off">
+        </div>
+
+        <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Description</span>
             <textarea class="form-control capitalize" id="sale_description" maxlength="255"></textarea>
         </div>
@@ -307,7 +312,20 @@
         }
 
         // console.log('To be updated degree data',data );
-        
+    }
+
+    // function to auto insert today's sale_date
+    function autoInsertTodayDate(){
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = today.getFullYear();
+
+        // var currentDate = yyyy + '-' + mm + '-' + dd;
+        var currentDate = dd + '-' + mm + '-' + yyyy;
+
+        // Set the input field value to the current sale_date
+        $('#sale_date').val(currentDate);
     }
 
     // END
@@ -350,17 +368,16 @@
 
     toggleInputs();
     calculateRemaining();
+    autoInsertTodayDate();
 
 // END-------initial load-------END
 
 
 // START-----LIVE CAPTURE-----START
-    $(document).ready(function()
-    {
+    $(document).ready(function(){
         // auto calculate the sale_remaining sale_price
         document.getElementById("sale_price").addEventListener("input", calculateRemaining);
         document.getElementById("sale_deposit").addEventListener("input", calculateRemaining);
-
 
         // Autocomplete functionality
         $('#customer_name').on('input', function() {
@@ -398,7 +415,7 @@
             customerId = null;
         });
 
-        // submit the information
+        // submit the information to controller
         $('#submitButton').click(function(event) { 
             // Prevent the default form submission
             event.preventDefault();
@@ -433,13 +450,14 @@
                         remarks: checkbox.checked ? remarks.value : null,
 
                         // sale data
+                        sale_date: sale_date.value,
                         description: sale_description.value,
                         price: sale_price.value,
                         is_paid: paymentStatus.value === "1" ? true : false,
                         deposit: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_deposit.value : null),
                         sale_remaining: paymentStatus.value === "1" ? 0.00 : (paymentStatus.value === "2" ? sale_remaining.value : null),
                     };
-                    // console.log('new_sale_data: ', new_sale_data);
+                    console.log('new_sale_data: ', new_sale_data);
 
                     fetch('{{ route('sale.store') }}', {
                         method: 'POST',
@@ -454,13 +472,13 @@
                     })
                     .then(data =>{
                         window.location.href = '/sale/list';
-                        // console.log(data);
+                        console.log(data);
                     })
                     .catch(error => {
                         console.error('There was a problem with the fetch operation:', error.message);
                     });
                 }
-            }else{
+            }else{ //if customer detail checkbox is NOT checked
                 if (saleDescriptionValue === ''){
                     event.preventDefault();
                     document.getElementById('sale_description').classList.add('input-error');                    
@@ -480,6 +498,7 @@
                         remarks: checkbox.checked ? remarks.value : null,
 
                         // sale data
+                        sale_date: sale_date.value,
                         description: sale_description.value,
                         price: sale_price.value,
                         is_paid: paymentStatus.value === "1" ? true : false,
@@ -566,6 +585,12 @@
 
             document.getElementById('right_eye_degree').disabled = true;
             document.getElementById('right_eye_degree').value = original_right_eye_degree;
+        });
+
+        $('#sale_date').datepicker({
+            format: 'dd-mm-yyyy',  // Date format to be saved in the input field
+            autoclose: true,       // Close the datepicker after selecting a date
+            todayHighlight: true   // Highlight today's date
         });
     });
 
