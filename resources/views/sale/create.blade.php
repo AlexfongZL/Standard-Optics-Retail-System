@@ -50,19 +50,19 @@
         </div>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Left SPH</span>
-            <button id="left_eye_degree_update" class="btn btn-outline-success" type="button">Update</button>
-            <button id="left_eye_degree_confirm" class="btn btn-outline-success hide" type="button" style="fontWeight: bold;">✓</button>
-            <button id="left_eye_degree_cancel" class="btn btn-outline-danger hide" type="button" style="fontWeight: bold;">X</button>
-            <input type="text" id="left_eye_degree" class="customer-details form-control capitalize" name="left_eye_degree" aria-describedby="basic-addon1" maxlength="255">
-        </div>
-
-        <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Right SPH</span>
             <button id="right_eye_degree_update" class="btn btn-outline-success" type="button">Update</button>
             <button id="right_eye_degree_confirm" class="btn btn-outline-success hide" type="button" style="fontWeight: bold;">✓</button>
             <button id="right_eye_degree_cancel" class="btn btn-outline-danger hide" type="button" style="fontWeight: bold;">X</button>
             <input type="text" id="right_eye_degree" class="customer-details form-control capitalize" name="right_eye_degree" aria-describedby="basic-addon1" maxlength="255">
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Left SPH</span>
+            <button id="left_eye_degree_update" class="btn btn-outline-success" type="button">Update</button>
+            <button id="left_eye_degree_confirm" class="btn btn-outline-success hide" type="button" style="fontWeight: bold;">✓</button>
+            <button id="left_eye_degree_cancel" class="btn btn-outline-danger hide" type="button" style="fontWeight: bold;">X</button>
+            <input type="text" id="left_eye_degree" class="customer-details form-control capitalize" name="left_eye_degree" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">

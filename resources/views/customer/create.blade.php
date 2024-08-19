@@ -27,13 +27,13 @@
         </div>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Left SPH</span>
-            <input type="text" id="left_eye_degree" class="form-control capitalize" name="left_eye_degree" aria-describedby="basic-addon1" maxlength="255">
+            <span class="input-group-text" id="basic-addon1">Right SPH</span>
+            <input type="text" id="right_eye_degree" class="form-control capitalize" name="right_eye_degree" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Right SPH</span>
-            <input type="text" id="right_eye_degree" class="form-control capitalize" name="right_eye_degree" aria-describedby="basic-addon1" maxlength="255">
+            <span class="input-group-text" id="basic-addon1">Left SPH</span>
+            <input type="text" id="left_eye_degree" class="form-control capitalize" name="left_eye_degree" aria-describedby="basic-addon1" maxlength="255">
         </div>
 
         <div class="input-group mb-3">
