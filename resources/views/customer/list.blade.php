@@ -45,7 +45,7 @@
     <thead class="thead-dark">
         <tr>
         <th scope="col">{{__('txt.customer.name')}}</th>
-        <th scope="col">{{__('txt.customer.ic_passport')}}</th>
+        <!-- <th scope="col">{{__('txt.customer.ic_passport')}}</th> -->
         <th scope="col">{{__('txt.customer.telephone')}}</th>
         <th scope="col">{{__('txt.customer.address')}}</th>
         <th scope="col">{{__('txt.customer.left_eye_degree')}}</th>
@@ -59,7 +59,7 @@
         @foreach($customers as $customer)
             <tr>
                 <td><a class="link-opacity-100" href="{{route('customer.detail', ['id' => $customer->id])}}">{{$customer->name}}</a></td>
-                <td>{{$customer->ic_passport_num}}</td>
+                <!-- <td>{{$customer->ic_passport_num}}</td> -->
                 <td>{{$customer->telephone_num}}</td>
                 <td>{{$customer->address}}</td>
                 <td>{{$customer->latest_left_eye_degree}}</td>
